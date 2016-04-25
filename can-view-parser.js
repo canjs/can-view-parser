@@ -1,4 +1,4 @@
-/* jshint maxdepth:7,node:true*/
+/* jshint maxdepth:7,node:true, latedef:false */
 function each(items, callback){
 	for ( var i = 0; i < items.length; i++ ) {
 		callback(items[i], i);
