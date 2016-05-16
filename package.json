@@ -27,7 +27,7 @@
     "document": "documentjs",
     "develop": "done-serve --static --develop --port 8080"
   },
-  "main": "dist/cjs/can-view-parser",
+  "main": "./can-view-parser",
   "browser": {
     "transform": [
       "cssify"
@@ -45,7 +45,6 @@
     "JS"
   ],
   "system": {
-    "main": "can-view-parser",
     "configDependencies": [
       "live-reload"
     ],
