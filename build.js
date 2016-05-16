@@ -5,14 +5,13 @@ stealTools.export({
 		config: __dirname + "/package.json!npm"
 	},
 	outputs: {
-		"+cjs": {},
 		"+amd": {},
 		"+global-js": {}
 	}
 }).catch(function(e){
-	
+
 	setTimeout(function(){
 		throw e;
 	},1);
-	
+
 });

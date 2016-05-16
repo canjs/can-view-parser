@@ -45,6 +45,7 @@
     "JS"
   ],
   "system": {
+    "main": "can-view-parser",
     "configDependencies": [
       "live-reload"
     ],
