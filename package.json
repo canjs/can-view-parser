@@ -1,9 +1,9 @@
 {
   "name": "can-view-parser",
-  "version": "3.0.0-pre.1",
+  "version": "3.0.0-pre.2",
   "description": "Parses html and magic tags",
   "homepage": "http://canjs.com",
-    "repository": {
+  "repository": {
     "type": "git",
     "url": "git://github.com/canjs/can-view-parser.git"
   },
