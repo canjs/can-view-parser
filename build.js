@@ -6,7 +6,11 @@ stealTools.export({
 	},
 	outputs: {
 		"+amd": {},
-		"+global-js": {}
+		"+standalone": {
+			exports: {
+				"can-util/namespace": "can"
+			}
+		}
 	}
 }).catch(function(e){
 
