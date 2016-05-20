@@ -1,4 +1,6 @@
 /* jshint maxdepth:7,node:true, latedef:false */
+var namespace = require('can-util/namespace');
+
 function each(items, callback){
 	for ( var i = 0; i < items.length; i++ ) {
 		callback(items[i], i);
@@ -418,4 +420,4 @@ HTMLParser.parseAttrs = function(rest, handler){
 
 };
 
-module.exports = HTMLParser;
+module.exports = namespace.HTMLParser = HTMLParser;
