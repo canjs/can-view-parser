@@ -2,56 +2,120 @@
 
 [![Build Status](https://travis-ci.org/canjs/can-view-parser.png?branch=master)](https://travis-ci.org/canjs/can-view-parser)
 
-Parses html and magic tags
+Parses html and magic tags.
 
-## Usage
+- <code>[parse(html, handler, [returnIntermediate])](#parsehtml-handler-returnintermediate)</code>
+- <code>[ParseHandler Object](#parsehandler-object)</code>
+  - <code>[start(tagName, unary)](#starttagname-unary)</code>
+  - <code>[end(tagName, unary)](#endtagname-unary)</code>
+  - <code>[close(tagName)](#closetagname)</code>
+  - <code>[attrStart(attrName)](#attrstartattrname)</code>
+  - <code>[attrEnd(attrName)](#attrendattrname)</code>
+  - <code>[attrValue(value)](#attrvaluevalue)</code>
+  - <code>[chars(value)](#charsvalue)</code>
+  - <code>[comment(value)](#commentvalue)</code>
+  - <code>[done()](#done)</code>
 
-### ES6 use
+## API
 
-With StealJS, you can import this module directly in a template that is autorendered:
+
+### `parse(html, handler, [returnIntermediate])`
+
 
 ```js
-import plugin from 'can-view-parser';
+can.view.parser("<h1> ....", {
+	start:     function( tagName, unary ){},
+	end:       function( tagName, unary ){},
+	close:     function( tagName ){},
+	attrStart: function( attrName ){},
+	attrEnd:   function( attrName ){},
+	attrValue: function( value ){},
+	chars:     function( value ){},
+	comment:   function( value ){},
+	special:   function( value ){},
+	done:      function( ){}
+});
 ```
 
-### CommonJS use
 
-Use `require` to load `can-view-parser` and everything else
-needed to create a template that uses `can-view-parser`:
+1. __html__ <code>{String|Object}</code>:
+  A mustache and html string to parse or an intermediate object the represents a previous parsing.
+1. __handler__ <code>{[ParseHandler](#parsehandler-object)}</code>:
+  An object of function call backs.
+1. __returnIntermediate__ <code>{Boolean}</code>:
+  If true, returns a JS object representation of the parsing.
+  
+  
+### ParseHandler `{Object}`
 
-```js
-var plugin = require("can-view-parser");
-```
+A thing that handles 
 
-## AMD use
 
-Configure the `can` and `jquery` paths and the `can-view-parser` package:
 
-```html
-<script src="require.js"></script>
-<script>
-	require.config({
-	    paths: {
-	        "jquery": "node_modules/jquery/dist/jquery",
-	        "can": "node_modules/canjs/dist/amd/can"
-	    },
-	    packages: [{
-		    	name: 'can-view-parser',
-		    	location: 'node_modules/can-view-parser/dist/amd',
-		    	main: 'lib/can-view-parser'
-	    }]
-	});
-	require(["main-amd"], function(){});
-</script>
-```
+#### `Object`
 
-### Standalone use
 
-Load the `global` version of the plugin:
+#### `start(tagName, unary)`
 
-```html
-<script src='./node_modules/can-view-parser/dist/global/can-view-parser.js'></script>
-```
+
+1. __tagName__ <code>{String}</code>:
+  The name of the tag.
+1. __unary__ <code>{Boolean}</code>:
+  If this tag is unary (has no closing tag).
+  
+
+#### `end(tagName, unary)`
+
+
+1. __tagName__ <code>{String}</code>:
+  The name of the tag.
+1. __unary__ <code>{Boolean}</code>:
+  If this tag is unary (has no closing tag).
+  
+
+#### `close(tagName)`
+
+
+1. __tagName__ <code>{String}</code>:
+  The name of the tag.
+  
+
+#### `attrStart(attrName)`
+
+
+1. __attrName__ <code>{String}</code>:
+  The name of the attribute.
+  
+
+#### `attrEnd(attrName)`
+
+
+1. __attrName__ <code>{String}</code>:
+  The name of the attribute.
+  
+
+#### `attrValue(value)`
+
+
+1. __value__ <code>{String}</code>:
+  The value discovered associated with an attribute.
+  
+
+#### `chars(value)`
+
+
+1. __value__ <code>{String}</code>:
+  The character data within the tag.
+  
+
+#### `comment(value)`
+
+
+1. __value__ <code>{String}</code>:
+  The Comment within the tag.
+  
+
+#### `done()`
 
 ## Contributing
 
