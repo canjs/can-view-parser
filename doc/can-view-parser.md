@@ -1,39 +1,34 @@
-@module {function} can-util-parser parse
+@module {function} can-view-parser parse
 @description Parse HTML and mustache tokens.
 
 @signature `parse(html, handler, [returnIntermediate])`
 
+Parse an html string:
+
 ```js
-can.view.parser("<h1> ....", {
-	start:     function( tagName, unary ){},
-	end:       function( tagName, unary ){},
-	close:     function( tagName ){},
-	attrStart: function( attrName ){},
-	attrEnd:   function( attrName ){},
-	attrValue: function( value ){},
-	chars:     function( value ){},
-	comment:   function( value ){},
-	special:   function( value ){},
-	done:      function( ){}
+var parser = require("can-view-parser");
+
+var html = '<h1><span bob="phillips"></span><span bob="meyers"></span>' +
+	'</h1>';
+
+var bobs = {};
+var curAttr;
+
+parser(html, {
+	attrStart: function(attrName){
+		curAttr = attrName;
+	},
+	attrValue: function(value){
+		bobs[curAttr] = value;
+	}
 });
+
+for(var first in bobs) {
+	var last = bobs[first];
+	console.log("Hello", first, last);
+}
 ```
 
 @param {String|Object} html A mustache and html string to parse or an intermediate object the represents a previous parsing.
-@param {Object}  handler An object of function call backs.
+@param {Object}  handler An object of callbacks.
 @param {Boolean} [returnIntermediate=false] If true, returns a JS object representation of the parsing.
-
-
-@body
-
-    can.view.parser("<h1> ....", {
-    	start:     function( tagName, unary ){},
-		end:       function( tagName, unary ){},
-		close:     function( tagName ){},
-		attrStart: function( attrName ){},
-		attrEnd:   function( attrName ){},
-		attrValue: function( value ){},
-		chars:     function( value ){},
-		comment:   function( value ){},
-		special:   function( value ){},
-		done:      function( ){}
-    })
