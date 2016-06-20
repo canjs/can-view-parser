@@ -50,7 +50,7 @@
     "npmAlgorithm": "flat"
   },
   "devDependencies": {
-    "bit-docs": "0.0.5",
+    "bit-docs": "0.0.7",
     "jshint": "^2.9.1",
     "cssify": "^1.0.2",
     "steal": "^0.16.0",
@@ -72,8 +72,8 @@
       "bit-docs-generate-readme": "^0.0.8"
     },
     "glob": {
-      "pattern": "**\/*.{js,md}",
-      "ignore": "node_modules\/**\/*"
+      "pattern": "**/*.{js,md}",
+      "ignore": "node_modules/**/*"
     },
     "parent": "Construct.extend"
   }
