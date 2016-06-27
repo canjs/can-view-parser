@@ -4,7 +4,6 @@
 
 Parses html and magic tags.
 
-
 - <code>[__can-view-parser__ function](#can-view-parser-function)</code>
   - <code>[parse(html, handler, [returnIntermediate])](#parsehtml-handler-returnintermediate)</code>
 - <code>[ParseHandler Object](#parsehandler-object)</code>
