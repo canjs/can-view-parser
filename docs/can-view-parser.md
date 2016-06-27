@@ -1,4 +1,4 @@
-@module {function} can-view-parser parse
+@module {function} can-view-parser
 @parent can-infrastructure
 @description Parse HTML and mustache tokens.
 
