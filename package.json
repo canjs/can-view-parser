@@ -1,6 +1,6 @@
 {
   "name": "can-view-parser",
-  "version": "3.0.0-pre.4",
+  "version": "3.0.0-pre.5",
   "description": "Parses html and magic tags",
   "homepage": "http://canjs.com",
   "repository": {
@@ -75,9 +75,9 @@
       "pattern": "**/*.{js,md}",
       "ignore": "node_modules/**/*"
     },
-		"readme": {
-			"apis": "./docs/apis.json"
-		},
+    "readme": {
+      "apis": "./docs/apis.json"
+    },
     "parent": "can-view-parser"
   }
 }
