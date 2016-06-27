@@ -1,4 +1,5 @@
 @module {function} can-view-parser parse
+@parent can-infrastructure
 @description Parse HTML and mustache tokens.
 
 @signature `parse(html, handler, [returnIntermediate])`
