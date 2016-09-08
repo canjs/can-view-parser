@@ -6,7 +6,6 @@ QUnit.module("can-view-parser");
 var makeChecks = function(tests){
 	var count = 0;
 	var makeCheck = function(name){
-
 		return function(){
 			if(count >= tests.length) {
 				ok(false, "called "+name+" with "+arguments[0]);
@@ -24,7 +23,6 @@ var makeChecks = function(tests){
 		};
 	};
 
-
 	return {
 		start: makeCheck("start"),
 		end: makeCheck("end"),
@@ -38,7 +36,6 @@ var makeChecks = function(tests){
 		done: makeCheck("done")
 	};
 };
-
 
 test("html to html", function(){
 
@@ -191,17 +188,55 @@ test("anchors are allowed as children of inline elements - #2169", function(){
 	]));
 });
 
-test("inline tags are closed when a block element is encountered", function(){
-	parser("<span><span><div></div></span></span>", makeChecks([
+// We no longer want this behavior
+// test("inline tags are closed when a block element is encountered", function(){
+// 	parser("<span><span><div></div></span></span>", makeChecks([
+// 		['start', ['span', false]],
+// 		['end', ['span', false]],
+// 		['start', ['span', false]],
+// 		['end', ['span', false]],
+// 		['close', ['span']],
+// 		['close', ['span']],
+// 		['start', ['div', false]],
+// 		['end', ['div', false]],
+// 		['close', ['div']],
+// 		['done', []]
+// 	]));
+// });
+
+test("inline tags encapsulate inner block elements", function() {
+	parser("<span><div></div></span>", makeChecks([
 		['start', ['span', false]],
 		['end', ['span', false]],
-		['start', ['span', false]],
-		['end', ['span', false]],
-		['close', ['span']],
-		['close', ['span']],
 		['start', ['div', false]],
 		['end', ['div', false]],
 		['close', ['div']],
+		['close', ['span']],
+		['done', []]
+	]));
+
+	parser("<em><h1></h1></em>", makeChecks([
+		['start', ['em', false]],
+		['end', ['em', false]],
+		['start', ['h1', false]],
+		['end', ['h1', false]],
+		['close', ['h1']],
+		['close', ['em']],
+		['done', []]
+	]));
+});
+
+test("unordered lists will contain their list items", function() {
+	parser("<ul><li></li><li></li></ul>", makeChecks([
+		['start', ['ul', false]],
+		['end', ['ul', false]],
+		['start', ['li', false]],
+		['end', ['li', false]],
+		['close', ['li']],
+		['start', ['li', false]],
+		['end', ['li', false]],
+		['close', ['li']],
+		['close', ['ul']],
 		['done', []]
 	]));
 });
