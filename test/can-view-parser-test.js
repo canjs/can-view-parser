@@ -188,22 +188,6 @@ test("anchors are allowed as children of inline elements - #2169", function(){
 	]));
 });
 
-// We no longer want this behavior
-// test("inline tags are closed when a block element is encountered", function(){
-// 	parser("<span><span><div></div></span></span>", makeChecks([
-// 		['start', ['span', false]],
-// 		['end', ['span', false]],
-// 		['start', ['span', false]],
-// 		['end', ['span', false]],
-// 		['close', ['span']],
-// 		['close', ['span']],
-// 		['start', ['div', false]],
-// 		['end', ['div', false]],
-// 		['close', ['div']],
-// 		['done', []]
-// 	]));
-// });
-
 test("inline tags encapsulate inner block elements", function() {
 	parser("<span><div></div></span>", makeChecks([
 		['start', ['span', false]],
