@@ -1,5 +1,6 @@
 /* jshint maxdepth:7,node:true, latedef:false */
-var namespace = require('can-util/namespace');
+var namespace = require('can-util/namespace'), 
+	dev = require('can-util/js/dev/dev');
 
 function each(items, callback){
 	for ( var i = 0; i < items.length; i++ ) {
@@ -26,6 +27,7 @@ function handleIntermediate(intermediate, handler){
 var alphaNumeric = "A-Za-z0-9",
 	alphaNumericHU = "-:_"+alphaNumeric,
 	attributeNames = "[^=>\\s\\/]+",
+	camelCase = /([a-z])([A-Z])/g, 
 	spaceEQspace = "\\s*=\\s*",
 	singleCurly = "\\{[^\\}\\{]\\}",
 	doubleCurly = "\\{\\{[^\\}]\\}\\}\\}?",
@@ -255,7 +257,14 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 };
 
 var callAttrStart = function(state, curIndex, handler, rest){
-	state.attrStart = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex);
+	var attrName = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex), 
+		newAttrName = attrName, 
+		oldAttrName = attrName;
+	if (camelCase.test(attrName)) {
+		newAttrName = attrName.replace(camelCase, camelCaseToSpinalCase);
+		dev.warn("can-view-parser: Found attribute with name: ", oldAttrName, ". Converting to: ", newAttrName);
+	}
+	state.attrStart = newAttrName;
 	handler.attrStart(state.attrStart);
 	state.inName = false;
 };
@@ -276,6 +285,10 @@ var callAttrEnd = function(state, curIndex, handler, rest){
 	state.lookingForEq = false;
 	state.inQuote = false;
 	state.lookingForName = true;
+};
+
+var camelCaseToSpinalCase = function (match, lowerCaseChar, upperCaseChar) {
+	return lowerCaseChar + "-" + upperCaseChar.toLowerCase();
 };
 
 HTMLParser.parseAttrs = function(rest, handler){
