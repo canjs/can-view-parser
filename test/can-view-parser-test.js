@@ -412,3 +412,11 @@ test('quotes around attributes and other lazy attribute writing (#2097)', functi
 		["done",[]]
 	]));
 });
+
+test('camelCased attributes are converted to spinal-case', function () {
+	parser.parseAttrs("({camelCase})='assigned'", makeChecks([
+		["attrStart", ["({camel-case})"]],
+		["attrValue", ["assigned"]],
+		["attrEnd", ["({camel-case})"]],
+	]));
+});
