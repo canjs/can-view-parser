@@ -32,7 +32,7 @@ var alphaNumeric = "A-Za-z0-9",
 	singleCurly = "\\{[^\\}\\{]\\}",
 	doubleCurly = "\\{\\{[^\\}]\\}\\}\\}?",
 	attributeEqAndValue = "(?:"+spaceEQspace+"(?:"+
-	  "(?:"+doubleCurly+")|(?:"+singleCurly+")|(?:\"[^\"]*\")|(?:'[^']*')|[^>\\s]+))?",
+	  "(?:"+doubleCurly+")|(?:"+singleCurly+")|(?:\"[^\"]*\")|(?:'[^']*')|))?",
 	matchStash = "\\{\\{[^\\}]*\\}\\}\\}?",
 	stash = "\\{\\{([^\\}]*)\\}\\}\\}?",
 	startTag = new RegExp("^<(["+alphaNumeric+"]["+alphaNumericHU+"]*)"+
@@ -365,6 +365,9 @@ HTMLParser.parseAttrs = function(rest, handler){
 			// if we haven't yet started this attribute `{{}}=foo` case:
 			if(!state.attrStart) {
 				callAttrStart(state, curIndex, handler, rest);
+				if(i === rest.length){
+					callAttrEnd(state, curIndex, handler, rest);
+				}
 			}
 			state.lookingForValue = true;
 			state.lookingForEq = false;
@@ -397,6 +400,8 @@ HTMLParser.parseAttrs = function(rest, handler){
 				} else {
 					state.valueStart = curIndex;
 				}
+			} else if (i === rest.length){
+				callAttrEnd(state, curIndex, handler, rest);
 			}
 		}
 	}
