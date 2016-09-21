@@ -32,8 +32,7 @@ var alphaNumeric = "A-Za-z0-9",
 	mustache = new RegExp(stash,"g"),
 	txtBreak = /<|\{\{/,
 	space = /\s/,
-	alphaRegex = new RegExp('['+ alphaNumeric + ']'),
-	alphaHURegex = new RegExp('['+ alphaNumericHU + ']');
+	alphaRegex = new RegExp('['+ alphaNumeric + ']');
 
 // Empty Elements - HTML 5
 var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
@@ -69,56 +68,6 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 				}
 			};
 		});
-	}
-
-	function handleStartTag(html) {
-		var match, startTag, tagName, rest = '', unary = '';
-		
-		// Must have a closing bracket
-		if(html.indexOf('>') !== -1){
-			startTag = html.substring(0, html.indexOf('>') + 1);
-
-			//must start with alphaNumeric character
-			if(alphaRegex.test(startTag[1])){
-				tagName = startTag.substring(1, startTag.length-1); 
-
-				// no spaces in tag, assuming there are no attributes		
-				if(!space.test(startTag)){
-					// if it is unary			
-					if(startTag[startTag.length-2] === '/'){	
-						tagName = startTag.substring(1, startTag.length-2);
-						unary = '/';
-					} 
-				// there are spaces
-				} else {
-					tagName = startTag.substring(1, startTag.match(space).index);
-					rest = startTag.substring(startTag.match(space).index, startTag.length-1);
-					// if it is unary
-					if (startTag[startTag.length-2] === '/'){
-						unary = '/';
-						rest = startTag.substring(startTag.match(space).index, startTag.length-2);
-					} 
-					
-				}
-				// double check for possible attributes hidden in tagName
-				for(var i=1; i < tagName.length; i++){
-					if(!(alphaHURegex.test(tagName[i]))) {
-						rest = tagName.substring(i) + rest;
-						tagName = tagName.substring(0, i);
-					}
-				}
-
-				match = [startTag, tagName, rest, unary];
-			}
-		
-			if(match){
-				callChars();
-				parseStartTag.apply(null, match);
-				chars = false;
-				return html.substring(startTag.length);
-			}
-		}
-		return html;
 	}
 
 	function parseStartTag(tag, tagName, rest, unary) {
@@ -230,7 +179,14 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 				// start tag
 			} else if (html.indexOf("<") === 0) {
-				html = handleStartTag(html);
+				var res = HTMLParser.searchStartTag(html);
+
+				if(res) {
+					callChars();
+					html = res.html;
+					parseStartTag.apply(null, res.match);
+					chars = false;
+				}
 
 			} else if (html.indexOf("{{") === 0 ) {
 				match = html.match(mustache);
@@ -395,6 +351,9 @@ HTMLParser.parseAttrs = function(rest, handler){
 			// if we haven't yet started this attribute `{{}}=foo` case:
 			if(!state.attrStart) {
 				callAttrStart(state, curIndex, handler, rest);
+				
+				// if the equal sign is the last character
+				// we need to end the attribute
 				if(i === rest.length){
 					callAttrEnd(state, curIndex, handler, rest);
 				}
@@ -430,6 +389,8 @@ HTMLParser.parseAttrs = function(rest, handler){
 				} else {
 					state.valueStart = curIndex;
 				}
+				// if we are looking for a value 
+				// at the end of the loop we need callAttrEnd
 			} else if (i === rest.length){
 				callAttrEnd(state, curIndex, handler, rest);
 			}
@@ -444,6 +405,46 @@ HTMLParser.parseAttrs = function(rest, handler){
 	} else if(state.inValue) {
 		callAttrEnd(state, curIndex+1, handler, rest);
 	}
+};
+
+HTMLParser.searchStartTag = function (html) {
+	var closingIndex = html.indexOf('>');
+	// if there is no closing bracket
+	// <input class=
+	// or if the tagName does not start with alphaNumer character
+	// <_iaois>
+	// it is not a startTag
+	if(closingIndex === -1 || !(alphaRegex.test(html[1]))){
+		return null;
+	}
+	
+	var tagName, tagContent, match, rest = '', unary = '';
+	var startTag = html.substring(0, closingIndex + 1);
+	var isUnary = startTag[startTag.length-2] === '/';
+	var spaceIndex = startTag.search(space);
+
+	if(isUnary){
+		unary = '/';
+		tagContent = startTag.substring(1, startTag.length-2).trim();
+	} else {
+		tagContent = startTag.substring(1, startTag.length-1).trim();
+	}
+
+	if(spaceIndex === -1){
+		tagName = tagContent;
+	} else {
+		//spaceIndex needs to shift one to the left
+		spaceIndex--;
+		tagName = tagContent.substring(0, spaceIndex);
+		rest = tagContent.substring(spaceIndex);
+	}
+
+	match = [startTag, tagName, rest, unary];
+	
+	return {
+		match: match,
+		html: html.substring(startTag.length)
+	};
 
 
 };
