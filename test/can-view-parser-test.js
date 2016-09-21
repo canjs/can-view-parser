@@ -420,3 +420,22 @@ test('camelCased attributes are converted to spinal-case', function () {
 		["attrEnd", ["({camel-case})"]],
 	]));
 });
+
+test('elements that have attributes with equal signs and no values are handled appropriately (#17)', function () {
+	parser("<input class='toggle' type='checkbox' {($checked)}='complete' ($change)=>", makeChecks([
+		["start", ["input", true]],
+		["attrStart", ["class"]],
+		["attrValue", ["toggle"]],
+		["attrEnd", ["class"]],
+		["attrStart", ["type"]],
+		["attrValue", ["checkbox"]],
+		["attrEnd", ["type"]],
+		["attrStart", ["{($checked)}"]],
+		["attrValue", ["complete"]],
+		["attrEnd", ["{($checked)}"]],
+		["attrStart", ["($change)"]],
+		["attrEnd", ["($change)"]],
+		["end", ["input"]],
+		["done", []]
+	]));
+});
