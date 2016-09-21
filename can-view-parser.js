@@ -26,28 +26,13 @@ function handleIntermediate(intermediate, handler){
 
 var alphaNumeric = "A-Za-z0-9",
 	alphaNumericHU = "-:_"+alphaNumeric,
-	attributeNames = "[^=>\\s\\/]+",
 	camelCase = /([a-z])([A-Z])/g, 
-	spaceEQspace = "\\s*=\\s*",
-	singleCurly = "\\{[^\\}\\{]\\}",
-	doubleCurly = "\\{\\{[^\\}]\\}\\}\\}?",
-	attributeEqAndValue = "(?:"+spaceEQspace+"(?:"+
-	  "(?:"+doubleCurly+")|(?:"+singleCurly+")|(?:\"[^\"]*\")|(?:'[^']*')|[^>\\s]+))?",
-	matchStash = "\\{\\{[^\\}]*\\}\\}\\}?",
 	stash = "\\{\\{([^\\}]*)\\}\\}\\}?",
-	startTag = new RegExp("^<(["+alphaNumeric+"]["+alphaNumericHU+"]*)"+
-			"(" +
-				"(?:\\s*"+
-					"(?:(?:"+
-						"(?:"+attributeNames+")?"+
-						attributeEqAndValue+")|"+
-                   "(?:"+matchStash+")+)"+
-                ")*"+
-            ")\\s*(\\/?)>"),
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
 	mustache = new RegExp(stash,"g"),
 	txtBreak = /<|\{\{/,
-	space = /\s/;
+	space = /\s/,
+	alphaRegex = new RegExp('['+ alphaNumeric + ']');
 
 // Empty Elements - HTML 5
 var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
@@ -194,14 +179,15 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 				// start tag
 			} else if (html.indexOf("<") === 0) {
-				match = html.match(startTag);
+				var res = HTMLParser.searchStartTag(html);
 
-				if (match) {
+				if(res) {
 					callChars();
-					html = html.substring(match[0].length);
-					match[0].replace(startTag, parseStartTag);
+					html = res.html;
+					parseStartTag.apply(null, res.match);
 					chars = false;
 				}
+
 			} else if (html.indexOf("{{") === 0 ) {
 				match = html.match(mustache);
 
@@ -365,6 +351,12 @@ HTMLParser.parseAttrs = function(rest, handler){
 			// if we haven't yet started this attribute `{{}}=foo` case:
 			if(!state.attrStart) {
 				callAttrStart(state, curIndex, handler, rest);
+				
+				// if the equal sign is the last character
+				// we need to end the attribute
+				if(i === rest.length){
+					callAttrEnd(state, curIndex, handler, rest);
+				}
 			}
 			state.lookingForValue = true;
 			state.lookingForEq = false;
@@ -397,6 +389,10 @@ HTMLParser.parseAttrs = function(rest, handler){
 				} else {
 					state.valueStart = curIndex;
 				}
+				// if we are looking for a value 
+				// at the end of the loop we need callAttrEnd
+			} else if (i === rest.length){
+				callAttrEnd(state, curIndex, handler, rest);
 			}
 		}
 	}
@@ -409,6 +405,46 @@ HTMLParser.parseAttrs = function(rest, handler){
 	} else if(state.inValue) {
 		callAttrEnd(state, curIndex+1, handler, rest);
 	}
+};
+
+HTMLParser.searchStartTag = function (html) {
+	var closingIndex = html.indexOf('>');
+	// if there is no closing bracket
+	// <input class=
+	// or if the tagName does not start with alphaNumer character
+	// <_iaois>
+	// it is not a startTag
+	if(closingIndex === -1 || !(alphaRegex.test(html[1]))){
+		return null;
+	}
+	
+	var tagName, tagContent, match, rest = '', unary = '';
+	var startTag = html.substring(0, closingIndex + 1);
+	var isUnary = startTag[startTag.length-2] === '/';
+	var spaceIndex = startTag.search(space);
+
+	if(isUnary){
+		unary = '/';
+		tagContent = startTag.substring(1, startTag.length-2).trim();
+	} else {
+		tagContent = startTag.substring(1, startTag.length-1).trim();
+	}
+
+	if(spaceIndex === -1){
+		tagName = tagContent;
+	} else {
+		//spaceIndex needs to shift one to the left
+		spaceIndex--;
+		tagName = tagContent.substring(0, spaceIndex);
+		rest = tagContent.substring(spaceIndex);
+	}
+
+	match = [startTag, tagName, rest, unary];
+	
+	return {
+		match: match,
+		html: html.substring(startTag.length)
+	};
 
 
 };
