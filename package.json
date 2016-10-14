@@ -1,6 +1,6 @@
 {
   "name": "can-view-parser",
-  "version": "3.0.0-pre.7",
+  "version": "3.0.0",
   "description": "Parses html and magic tags",
   "homepage": "http://canjs.com",
   "repository": {
