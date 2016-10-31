@@ -248,7 +248,9 @@ var callAttrStart = function(state, curIndex, handler, rest){
 		oldAttrName = attrName;
 	if (camelCase.test(attrName)) {
 		newAttrName = attrName.replace(camelCase, camelCaseToSpinalCase);
+		//!steal-remove-start
 		dev.warn("can-view-parser: Found attribute with name: ", oldAttrName, ". Converting to: ", newAttrName);
+		//!steal-remove-end
 	}
 	state.attrStart = newAttrName;
 	handler.attrStart(state.attrStart);
