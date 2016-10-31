@@ -62,7 +62,7 @@
     "done-serve": "^0.2.0"
   },
   "dependencies": {
-    "can-util": "^3.0.1"
+    "can-util": "^3.0.4"
   },
   "bit-docs": {
     "dependencies": {
