@@ -51,6 +51,7 @@
     "done-serve": "^0.2.0"
   },
   "dependencies": {
+    "can-namespace": "1.0.0",
     "can-util": "^3.0.1"
   },
   "bit-docs": {
