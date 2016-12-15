@@ -1,5 +1,5 @@
 /* jshint maxdepth:7,node:true, latedef:false */
-var namespace = require('can-util/namespace'), 
+var namespace = require('can-namespace'),
 	dev = require('can-util/js/dev/dev');
 
 function each(items, callback){
