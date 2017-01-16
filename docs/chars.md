@@ -1,5 +1,5 @@
-@function can-view-parser.ParserHandler.chars chars
-@parent can-view-parser.ParserHandler
+@function can-view-parser.ParseHandler.chars chars
+@parent can-view-parser.ParseHandler
 @signature `chars(value)`
 
 Called when [CharacterData](https://developer.mozilla.org/en-US/docs/Web/API/CharacterData) is found within a tag.

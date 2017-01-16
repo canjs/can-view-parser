@@ -1,5 +1,5 @@
-@function can-view-parser.ParserHandler.attrStart attrStart
-@parent can-view-parser.ParserHandler
+@function can-view-parser.ParseHandler.attrStart attrStart
+@parent can-view-parser.ParseHandler
 @signature `attrStart(attrName)`
 
 Called when an attribute is found on an element.

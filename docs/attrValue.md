@@ -1,5 +1,5 @@
-@function can-view-parser.ParserHandler.attrValue attrValue
-@parent can-view-parser.ParserHandler
+@function can-view-parser.ParseHandler.attrValue attrValue
+@parent can-view-parser.ParseHandler
 @signature `attrValue(value)`
 
 Called when an attribute's **value** has been found.
