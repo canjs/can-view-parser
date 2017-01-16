@@ -26,11 +26,10 @@ function handleIntermediate(intermediate, handler){
 
 var alphaNumeric = "A-Za-z0-9",
 	alphaNumericHU = "-:_"+alphaNumeric,
-	camelCase = /([a-z])([A-Z])/g, 
-	stash = "\\{\\{([^\\}]*)\\}\\}\\}?",
+	camelCase = /([a-z])([A-Z])/g,
+	defaultMagicStart = "{{",
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
-	mustache = new RegExp(stash,"g"),
-	txtBreak = /<|\{\{/,
+	defaultMagicMatch = new RegExp("\\{\\{([^\\}]*)\\}\\}\\}?","g"),
 	space = /\s/,
 	alphaRegex = new RegExp('['+ alphaNumeric + ']');
 
@@ -69,6 +68,8 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 			};
 		});
 	}
+	var magicMatch = handler.magicMatch || defaultMagicMatch,
+		magicStart = handler.magicStart || defaultMagicStart;
 
 	function parseStartTag(tag, tagName, rest, unary) {
 		tagName = caseMatters[tagName] ? tagName : tagName.toLowerCase();
@@ -107,7 +108,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 				}
 			}
 		}
-		
+
 		if (pos >= 0) {
 			// Close all the open elements, up the stack
 			for (var i = stack.length - 1; i >= pos; i--) {
@@ -147,7 +148,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 	};
 
 	while (html) {
-		
+
 		chars = true;
 
 		// Make sure we're not in a script or style element
@@ -188,22 +189,22 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 					chars = false;
 				}
 
-			} else if (html.indexOf("{{") === 0 ) {
-				match = html.match(mustache);
+			} else if (html.indexOf(magicStart) === 0 ) {
+				match = html.match(magicMatch);
 
 				if (match) {
 					callChars();
 					html = html.substring(match[0].length);
-					match[0].replace(mustache, parseMustache);
+					match[0].replace(magicMatch, parseMustache);
 				}
 			}
 
 			if (chars) {
-				index = html.search(txtBreak);
+				index = findBreak(html, magicStart);
 				if(index === 0 && html === last) {
 					charsText += html.charAt(0);
 					html = html.substr(1);
-					index = html.search(txtBreak);
+					index = findBreak(html, magicStart);
 				}
 
 				var text = index < 0 ? html : html.substring(0, index);
@@ -243,8 +244,8 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 };
 
 var callAttrStart = function(state, curIndex, handler, rest){
-	var attrName = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex), 
-		newAttrName = attrName, 
+	var attrName = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex),
+		newAttrName = attrName,
 		oldAttrName = attrName;
 	if (camelCase.test(attrName)) {
 		newAttrName = attrName.replace(camelCase, camelCaseToSpinalCase);
@@ -275,6 +276,16 @@ var callAttrEnd = function(state, curIndex, handler, rest){
 	state.lookingForName = true;
 };
 
+var findBreak = function(str, magicStart) {
+	var magicLength = magicStart.length;
+	for(var i = 0, len = str.length; i < len; i++) {
+		if(str[i] === "<" || str.substr(i, magicLength) === magicStart) {
+			return i;
+		}
+	}
+	return -1;
+};
+
 var camelCaseToSpinalCase = function (match, lowerCaseChar, upperCaseChar) {
 	return lowerCaseChar + "-" + upperCaseChar.toLowerCase();
 };
@@ -283,10 +294,13 @@ HTMLParser.parseAttrs = function(rest, handler){
 	if(!rest) {
 		return;
 	}
+
+	var magicMatch = handler.magicMatch || defaultMagicMatch,
+		magicStart = handler.magicStart || defaultMagicStart;
+
 	var i = 0;
 	var curIndex;
 	var state = {
-		inDoubleCurly: false,
 		inName: false,
 		nameStart: undefined,
 		inValue: false,
@@ -300,11 +314,9 @@ HTMLParser.parseAttrs = function(rest, handler){
 	while(i < rest.length) {
 		curIndex = i;
 		var cur = rest.charAt(i);
-		var next = rest.charAt(i+1);
-		var nextNext = rest.charAt(i+2);
 		i++;
-		//debugger;
-		if(cur === "{" && next === "{") {
+
+		if(magicStart === rest.substr(curIndex, magicStart.length) ) {
 			if(state.inValue && curIndex > state.valueStart) {
 				handler.attrValue(rest.substring(state.valueStart, curIndex));
 			}
@@ -321,20 +333,15 @@ HTMLParser.parseAttrs = function(rest, handler){
 			else if(state.lookingForEq && state.attrStart) {
 				callAttrEnd(state, curIndex, handler, rest);
 			}
-			state.inDoubleCurly = true;
-			state.doubleCurlyStart = curIndex+2;
-			i++;
-		}
-		else if(state.inDoubleCurly) {
-			if(cur === "}" && next === "}") {
-				// for `{{{}}}`
-				var isTriple = nextNext === "}" ?  1: 0;
-				handler.special(rest.substring(state.doubleCurlyStart, curIndex));
-				state.inDoubleCurly = false;
+			magicMatch.lastIndex = curIndex;
+			var match = magicMatch.exec(rest);
+			if(match) {
+				handler.special(match[1]);
+				// i is already incremented
+				i = curIndex + (match[0].length);
 				if(state.inValue) {
-					state.valueStart = curIndex+2+isTriple;
+					state.valueStart = curIndex+match[0].length+1;
 				}
-				i += (1+isTriple);
 			}
 		}
 		else if(state.inValue) {
@@ -353,7 +360,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 			// if we haven't yet started this attribute `{{}}=foo` case:
 			if(!state.attrStart) {
 				callAttrStart(state, curIndex, handler, rest);
-				
+
 				// if the equal sign is the last character
 				// we need to end the attribute
 				if(i === rest.length){
@@ -391,7 +398,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 				} else {
 					state.valueStart = curIndex;
 				}
-				// if we are looking for a value 
+				// if we are looking for a value
 				// at the end of the loop we need callAttrEnd
 			} else if (i === rest.length){
 				callAttrEnd(state, curIndex, handler, rest);
@@ -407,6 +414,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 	} else if(state.inValue) {
 		callAttrEnd(state, curIndex+1, handler, rest);
 	}
+	magicMatch.lastIndex = 0;
 };
 
 HTMLParser.searchStartTag = function (html) {
@@ -419,7 +427,7 @@ HTMLParser.searchStartTag = function (html) {
 	if(closingIndex === -1 || !(alphaRegex.test(html[1]))){
 		return null;
 	}
-	
+
 	var tagName, tagContent, match, rest = '', unary = '';
 	var startTag = html.substring(0, closingIndex + 1);
 	var isUnary = startTag[startTag.length-2] === '/';
@@ -442,7 +450,7 @@ HTMLParser.searchStartTag = function (html) {
 	}
 
 	match = [startTag, tagName, rest, unary];
-	
+
 	return {
 		match: match,
 		html: html.substring(startTag.length)

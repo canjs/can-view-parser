@@ -1,5 +1,5 @@
-@function can-view-parser.ParserHandler.done done
-@parent can-view-parser.ParserHandler
+@function can-view-parser.ParseHandler.done done
+@parent can-view-parser.ParseHandler
 @signature `done()`
 
 Called at the end of parsing the template.

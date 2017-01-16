@@ -439,3 +439,34 @@ test('elements that have attributes with equal signs and no values are handled a
 		["done", []]
 	]));
 });
+
+
+test('supports other delimiters (#31)', function(){
+
+	var checks = makeChecks([
+		["start", ["h1", false]],
+		["attrStart", ["id"]],
+		["attrValue", ["foo"]],
+		["attrEnd", ["id"]],
+		["special", ["#if"]],
+		["special", ["."]],			//5
+		["special", ["/if"]],
+		["attrStart", ["class"]],
+		["attrValue", ["a"]],
+		["special", ["foo"]],
+		["attrEnd", ["class"]],		//10
+		["end", ["h1", false]],
+		["chars", ["Hello "]],
+		["special", ["message"]],
+		["chars", ["!"]],
+		["close",["h1"]],
+		["done",[]]
+	]);
+	checks.magicStart = "{";
+	checks.magicMatch = /\{([^\}]*)\}/g;
+
+
+	parser("<h1 id='foo' {#if}{.}{/if} class='a{foo}'>Hello {message}!</h1>",
+		checks);
+
+});
