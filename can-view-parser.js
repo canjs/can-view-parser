@@ -36,8 +36,11 @@ var alphaNumeric = "A-Za-z0-9",
 // Empty Elements - HTML 5
 var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
 
+// Attributes for which the case matters - shouldn’t be lowercased.
+var caseMattersAttributes = makeMap("allowReorder,attributeName,attributeType,autoReverse,baseFrequency,baseProfile,calcMode,clipPathUnits,contentScriptType,contentStyleType,diffuseConstant,edgeMode,externalResourcesRequired,filterRes,filterUnits,glyphRef,gradientTransform,gradientUnits,kernelMatrix,kernelUnitLength,keyPoints,keySplines,keyTimes,lengthAdjust,limitingConeAngle,markerHeight,markerUnits,markerWidth,maskContentUnits,maskUnits,patternContentUnits,patternTransform,patternUnits,pointsAtX,pointsAtY,pointsAtZ,preserveAlpha,preserveAspectRatio,primitiveUnits,repeatCount,repeatDur,requiredExtensions,requiredFeatures,specularConstant,specularExponent,spreadMethod,startOffset,stdDeviation,stitchTiles,surfaceScale,systemLanguage,tableValues,textLength,viewBox,viewTarget,xChannelSelector,yChannelSelector");
+
 // Elements for which tag case matters - shouldn't be lowercased.
-var caseMatters = makeMap("altGlyph,altGlyphDef,altGlyphItem,animateColor,animateMotion,animateTransform,clipPath,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,foreignObject,glyphRef,linearGradient,radialGradient,textPath,viewBox");
+var caseMattersElements = makeMap("altGlyph,altGlyphDef,altGlyphItem,animateColor,animateMotion,animateTransform,clipPath,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,foreignObject,glyphRef,linearGradient,radialGradient,textPath");
 
 // Elements that you can, intentionally, leave open
 // (and which close themselves)
@@ -72,7 +75,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		magicStart = handler.magicStart || defaultMagicStart;
 
 	function parseStartTag(tag, tagName, rest, unary) {
-		tagName = caseMatters[tagName] ? tagName : tagName.toLowerCase();
+		tagName = caseMattersElements[tagName] ? tagName : tagName.toLowerCase();
 
 		if (closeSelf[tagName] && stack.last() === tagName) {
 			parseEndTag("", tagName);
@@ -101,7 +104,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		}
 		// Find the closest opened tag of the same type
 		else {
-			tagName = caseMatters[tagName] ? tagName : tagName.toLowerCase();
+			tagName = caseMattersElements[tagName] ? tagName : tagName.toLowerCase();
 			for (pos = stack.length - 1; pos >= 0; pos--) {
 				if (stack[pos] === tagName) {
 					break;
@@ -247,7 +250,7 @@ var callAttrStart = function(state, curIndex, handler, rest){
 	var attrName = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex),
 		newAttrName = attrName,
 		oldAttrName = attrName;
-	if (camelCase.test(attrName)) {
+	if (!caseMattersAttributes[attrName] && camelCase.test(attrName)) {
 		newAttrName = attrName.replace(camelCase, camelCaseToSpinalCase);
 		//!steal-remove-start
 		dev.warn("can-view-parser: Found attribute with name: ", oldAttrName, ". Converting to: ", newAttrName);

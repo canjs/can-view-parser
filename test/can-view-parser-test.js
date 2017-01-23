@@ -89,6 +89,26 @@ test("uppercase html to html", function(){
 
 });
 
+test("camelCase attributes stay untouched (svg) - #22", function(){
+
+
+
+	var tests = [
+		["start", ["svg", false]],
+		["attrStart", ["viewBox"]],
+		["attrValue", ["0 0 15 22"]],
+		["attrEnd", ["viewBox"]],
+		["end", ["svg", false]],
+		["close", ["svg"]],
+		["done", []]
+	];
+
+
+
+	parser('<svg viewBox="0 0 15 22"></svg>', makeChecks(tests));
+
+});
+
 test("camelCase tags stay untouched (svg)", function(){
 
 
