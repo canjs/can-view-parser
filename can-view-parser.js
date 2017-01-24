@@ -343,7 +343,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 				// i is already incremented
 				i = curIndex + (match[0].length);
 				if(state.inValue) {
-					state.valueStart = curIndex+match[0].length+1;
+					state.valueStart = curIndex+match[0].length;
 				}
 			}
 		}

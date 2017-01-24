@@ -490,3 +490,18 @@ test('supports other delimiters (#31)', function(){
 		checks);
 
 });
+
+test('{{}} in attribute values are handled correctly (#34)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["class"]],
+		["special", ["foo"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["class"]],		//10
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 class='{{foo}}a'></h1>", makeChecks(tests));
+});
