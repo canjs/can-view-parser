@@ -505,3 +505,45 @@ test('{{}} in attribute values are handled correctly (#34)', function () {
 
 	parser("<h1 class='{{foo}}a'></h1>", makeChecks(tests));
 });
+
+test('warn on missmatched tag (canjs/canjs#1476)', function() {
+	var makeWarnChecks = function(tests) {
+		var count = 0;
+
+		return {
+			start: function(tagName, unary) {},
+			end: function(tagName, unary) {},
+			done: function() {},
+			warn: function(message) {
+				if (count >= tests.length) {
+					ok(false, "received warning: " + message);
+				} else {
+					equal(message, tests[count]);
+					count++;
+				}
+			}
+		};
+	};
+
+	expect(7 + 6);
+	parser("</h2><h1>Header<span></span></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2>" ]));
+	parser("<h1>Header</h2><span></span></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </h1>" ]));
+	parser("<h1>Header<span></h2></span></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </span>" ]));
+	parser("<h1>Header<span></span></h2></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </h1>" ]));
+	parser("<h1>Header<span></span></h1></h2><div></div>", makeWarnChecks([ "unexpected closing tag </h2>" ]));
+	parser("<h1>Header<span></span></h1><div></h2></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </div>" ]));
+	parser("<h1>Header<span></span></h1><div></div></h2>", makeWarnChecks([ "unexpected closing tag </h2>" ]));
+
+	parser("<h1>Header<span></h2></h1><div></div>",   makeWarnChecks([
+		"unexpected closing tag </h2> expected </span>",
+		"unexpected closing tag </h1> expected </span>"
+	]));
+	parser("<h1>Header<span></span></h2><div></div>", makeWarnChecks([
+		"unexpected closing tag </h2> expected </h1>",
+		"expected closing tag </h1>"
+	]));
+	parser("<h1>Header<span></span></h1><div></h2>",  makeWarnChecks([
+		"unexpected closing tag </h2> expected </div>",
+		"expected closing tag </div>"
+	]));
+});

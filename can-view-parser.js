@@ -74,6 +74,14 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 	var magicMatch = handler.magicMatch || defaultMagicMatch,
 		magicStart = handler.magicStart || defaultMagicStart;
 
+	function warn(message) {
+		if (handler.warn) {
+			handler.warn(message);
+		} else {
+			console.warn(message);
+		}
+	}
+
 	function parseStartTag(tag, tagName, rest, unary) {
 		tagName = caseMattersElements[tagName] ? tagName : tagName.toLowerCase();
 
@@ -109,6 +117,18 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 				if (stack[pos] === tagName) {
 					break;
 				}
+			}
+		}
+
+		if (typeof tag === 'undefined') {
+			if (stack.length > 0) {
+				warn(`expected closing tag </${stack[pos]}>`);
+			}
+		} else if (pos < 0 || pos !== stack.length - 1) {
+			if (stack.length > 0) {
+				warn(`unexpected closing tag ${tag} expected </${stack[stack.length - 1]}>`);
+			} else {
+				warn(`unexpected closing tag ${tag}`);
 			}
 		}
 
