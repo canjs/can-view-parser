@@ -1,5 +1,6 @@
 var parser = require('can-view-parser');
 var QUnit = require('steal-qunit');
+var canDev = require('can-util/js/dev/dev');
 
 QUnit.module("can-view-parser");
 
@@ -507,43 +508,56 @@ test('{{}} in attribute values are handled correctly (#34)', function () {
 });
 
 test('warn on missmatched tag (canjs/canjs#1476)', function() {
-	var makeWarnChecks = function(tests) {
+	var makeWarnChecks = function(input, texts) {
 		var count = 0;
+		var _warn = canDev.warn;
+		canDev.warn = function(text) {
+			equal(text, texts[count++]);
+		};
 
-		return {
+		parser(input, {
 			start: function(tagName, unary) {},
 			end: function(tagName, unary) {},
-			done: function() {},
-			warn: function(message) {
-				if (count >= tests.length) {
-					ok(false, "received warning: " + message);
-				} else {
-					equal(message, tests[count]);
-					count++;
-				}
-			}
-		};
+			done: function() {}
+		});
+
+		equal(count, texts.length);
+
+		canDev.warn = _warn;
 	};
 
-	expect(7 + 6);
-	parser("</h2><h1>Header<span></span></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2>" ]));
-	parser("<h1>Header</h2><span></span></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </h1>" ]));
-	parser("<h1>Header<span></h2></span></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </span>" ]));
-	parser("<h1>Header<span></span></h2></h1><div></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </h1>" ]));
-	parser("<h1>Header<span></span></h1></h2><div></div>", makeWarnChecks([ "unexpected closing tag </h2>" ]));
-	parser("<h1>Header<span></span></h1><div></h2></div>", makeWarnChecks([ "unexpected closing tag </h2> expected </div>" ]));
-	parser("<h1>Header<span></span></h1><div></div></h2>", makeWarnChecks([ "unexpected closing tag </h2>" ]));
+	makeWarnChecks("</h2><h1>Header<span></span></h1><div></div>", [
+		"unexpected closing tag </h2>"
+	]);
+	makeWarnChecks("<h1>Header</h2><span></span></h1><div></div>", [
+		"unexpected closing tag </h2> expected </h1>"
+	]);
+	makeWarnChecks("<h1>Header<span></h2></span></h1><div></div>", [
+		"unexpected closing tag </h2> expected </span>"
+	]);
+	makeWarnChecks("<h1>Header<span></span></h2></h1><div></div>", [
+		"unexpected closing tag </h2> expected </h1>"
+	]);
+	makeWarnChecks("<h1>Header<span></span></h1></h2><div></div>", [
+		"unexpected closing tag </h2>"
+	]);
+	makeWarnChecks("<h1>Header<span></span></h1><div></h2></div>", [
+		"unexpected closing tag </h2> expected </div>"
+	]);
+	makeWarnChecks("<h1>Header<span></span></h1><div></div></h2>", [
+		"unexpected closing tag </h2>"
+	]);
 
-	parser("<h1>Header<span></h2></h1><div></div>",   makeWarnChecks([
+	makeWarnChecks("<h1>Header<span></h2></h1><div></div>", [
 		"unexpected closing tag </h2> expected </span>",
 		"unexpected closing tag </h1> expected </span>"
-	]));
-	parser("<h1>Header<span></span></h2><div></div>", makeWarnChecks([
+	]);
+	makeWarnChecks("<h1>Header<span></span></h2><div></div>", [
 		"unexpected closing tag </h2> expected </h1>",
 		"expected closing tag </h1>"
-	]));
-	parser("<h1>Header<span></span></h1><div></h2>",  makeWarnChecks([
+	]);
+	makeWarnChecks("<h1>Header<span></span></h1><div></h2>", [
 		"unexpected closing tag </h2> expected </div>",
 		"expected closing tag </div>"
-	]));
+	]);
 });
