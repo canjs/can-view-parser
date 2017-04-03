@@ -561,3 +561,20 @@ test('warn on missmatched tag (canjs/canjs#1476)', function() {
 		"expected closing tag </div>"
 	]);
 });
+
+test('tags with data attributes are allowed in comments (#2)', function() {
+	parser("{{! foo }}", makeChecks([
+		[ "special", [ "! foo " ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{! <foo /> }}", makeChecks([
+		[ "special", [ "! <foo /> " ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{! <foo bar=\"{bam}\" /> }}", makeChecks([
+		[ "special", [ "! <foo bar=\"{bam}\" /> " ] ],
+		[ "done", [] ]
+	]));
+});
