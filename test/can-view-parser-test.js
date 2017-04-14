@@ -505,3 +505,20 @@ test('{{}} in attribute values are handled correctly (#34)', function () {
 
 	parser("<h1 class='{{foo}}a'></h1>", makeChecks(tests));
 });
+
+test('tags with data attributes are allowed in comments (#2)', function() {
+	parser("{{! foo }}", makeChecks([
+		[ "special", [ "! foo " ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{! <foo /> }}", makeChecks([
+		[ "special", [ "! <foo /> " ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{! <foo bar=\"{bam}\" /> }}", makeChecks([
+		[ "special", [ "! <foo bar=\"{bam}\" /> " ] ],
+		[ "done", [] ]
+	]));
+});

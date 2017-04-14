@@ -29,7 +29,7 @@ var alphaNumeric = "A-Za-z0-9",
 	camelCase = /([a-z])([A-Z])/g,
 	defaultMagicStart = "{{",
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
-	defaultMagicMatch = new RegExp("\\{\\{([^\\}]*)\\}\\}\\}?","g"),
+	defaultMagicMatch = new RegExp("\\{\\{([\\s\\S]*?)\\}\\}\\}?","g"),
 	space = /\s/,
 	alphaRegex = new RegExp('['+ alphaNumeric + ']');
 
