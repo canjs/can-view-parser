@@ -112,6 +112,20 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 			}
 		}
 
+		//!steal-remove-start
+		if (typeof tag === 'undefined') {
+			if (stack.length > 0) {
+				dev.warn("expected closing tag </" + stack[pos] + ">");
+			}
+		} else if (pos < 0 || pos !== stack.length - 1) {
+			if (stack.length > 0) {
+				dev.warn("unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+			} else {
+				dev.warn("unexpected closing tag " + tag);
+			}
+		}
+		//!steal-remove-end
+
 		if (pos >= 0) {
 			// Close all the open elements, up the stack
 			for (var i = stack.length - 1; i >= pos; i--) {
