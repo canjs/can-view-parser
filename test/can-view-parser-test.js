@@ -578,3 +578,20 @@ test('tags with data attributes are allowed in comments (#2)', function() {
 		[ "done", [] ]
 	]));
 });
+
+test('multiline special comments (#14)', function() {
+	parser("{{! foo !}}", makeChecks([
+		[ "special", [ "! foo !" ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{! {{foo}} {{bar}} !}}", makeChecks([
+		[ "special", [ "! {{foo}} {{bar}} !" ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{!\n{{foo}}\n{{bar}}\n!}}", makeChecks([
+		[ "special", [ "!\n{{foo}}\n{{bar}}\n!" ] ],
+		[ "done", [] ]
+	]));
+});
