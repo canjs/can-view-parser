@@ -507,6 +507,7 @@ test('{{}} in attribute values are handled correctly (#34)', function () {
 	parser("<h1 class='{{foo}}a'></h1>", makeChecks(tests));
 });
 
+//!steal-remove-start
 test('warn on missmatched tag (canjs/canjs#1476)', function() {
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
@@ -561,6 +562,7 @@ test('warn on missmatched tag (canjs/canjs#1476)', function() {
 		"expected closing tag </div>"
 	]);
 });
+//!steal-remove-end
 
 test('tags with data attributes are allowed in comments (#2)', function() {
 	parser("{{! foo }}", makeChecks([
