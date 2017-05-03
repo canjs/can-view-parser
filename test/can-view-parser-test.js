@@ -580,3 +580,25 @@ test('tags with data attributes are allowed in comments (#2)', function() {
 		[ "done", [] ]
 	]));
 });
+
+test('> in an attribute is correctly parsed (#36)', function() {
+	var tests = [
+		["start", ["div", false]], // <div foo=">"><hr foo=">" bar='>>->' /></div>
+		["attrStart", ["foo"]],
+		["attrValue", [">"]],
+		["attrEnd", ["foo"]],
+		["end", ["div", false]],
+			["start", ["hr", true]], // <hr foo="'>'" bar='>>->' /></div>
+			["attrStart", ["foo"]],
+			["attrValue", ["'>'"]],
+			["attrEnd", ["foo"]],
+			["attrStart", ["bar"]],
+			["attrValue", [">>->"]],
+			["attrEnd", ["bar"]],
+			["end", ["hr", true]],
+		["close", ["div"]],
+		["done", []]
+	];
+
+	parser('<div foo=">"><hr foo="\'>\'" bar=\'>>->\' /></div>', makeChecks(tests));
+});

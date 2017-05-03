@@ -307,6 +307,21 @@ var camelCaseToSpinalCase = function (match, lowerCaseChar, upperCaseChar) {
 	return lowerCaseChar + "-" + upperCaseChar.toLowerCase();
 };
 
+HTMLParser.sanitizeAttrs = function(html) {
+	// represent:
+	// <tag attrs="special characters that can muck up parsing"></tag>
+	// as:
+	// <tag attrs=.............................................></tag>
+	//
+	// regex explanation:
+	// (['"]) capture an opening ' or "
+	// (?:(?!\1).)* match zero or more characters that aren't the captured ' or "
+	// \1 match the closing ' or "
+	return html.replace(/(['"])(?:(?!\1).)*\1/g, function(match) {
+		return Array(match.length + 1).join('.'); // works in MS-IE
+	});
+};
+
 HTMLParser.parseAttrs = function(rest, handler){
 	if(!rest) {
 		return;
@@ -435,7 +450,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 };
 
 HTMLParser.searchStartTag = function (html) {
-	var closingIndex = html.indexOf('>');
+	var closingIndex = HTMLParser.sanitizeAttrs(html).indexOf('>');
 	// if there is no closing bracket
 	// <input class=
 	// or if the tagName does not start with alphaNumer character
