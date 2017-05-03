@@ -1,5 +1,7 @@
 # can-view-parser
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/canjs/can-view-parser.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/canjs/can-view-parser.png?branch=master)](https://travis-ci.org/canjs/can-view-parser)
 
 Parses html and magic tags.
