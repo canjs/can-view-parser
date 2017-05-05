@@ -31,7 +31,7 @@ var alphaNumeric = "A-Za-z0-9",
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
 	defaultMagicMatch = new RegExp("\\{\\{([\\s\\S]*?)\\}\\}\\}?","g"),
 	space = /\s/,
-	spacesRegex = new RegExp("\\s", "g"),
+	spacesRegex = /\s/g,
 	alphaRegex = new RegExp('['+ alphaNumeric + ']');
 
 // Empty Elements - HTML 5
@@ -52,6 +52,9 @@ var special = makeMap("script");
 
 // Callback names on `handler`.
 var tokenTypes = "start,end,close,attrStart,attrEnd,attrValue,chars,comment,special,done".split(",");
+
+//maps end characters to start characters
+var startOppositesMap = {"{": "}", "(":")"};
 
 var fn = function(){};
 
@@ -273,9 +276,7 @@ var callAttrStart = function(state, curIndex, handler, rest){
 	}
 
 	//encode spaces
-	if(spacesRegex.test(attrName)){
-		newAttrName = attrName.replace(spacesRegex, "\\s");
-	}
+	newAttrName = newAttrName.replace(spacesRegex, "\\s");
 
 	state.attrStart = newAttrName;
 	handler.attrStart(state.attrStart);
@@ -335,8 +336,6 @@ HTMLParser.parseAttrs = function(rest, handler){
 		lookingForValue: false,
 		lookingForEq : false
 	};
-	//maps end characters to start characters
-	var startOppositesMap = {"{": "}", "(":")"};
 
 	while(i < rest.length) {
 		curIndex = i;
