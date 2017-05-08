@@ -397,9 +397,20 @@ HTMLParser.parseAttrs = function(rest, handler){
 		//  it isn't finished until the matching end character is found
 		//  otherwise, a space finishes the name
 		else if(state.inName) {
-			var started = rest[ state.nameStart ];
+			var started = rest[ state.nameStart ],
+					otherStart, otherOpposite;
 			if(startOppositesMap[started] === cur) {
-				callAttrStart(state, curIndex+1, handler, rest);
+				//handle mismatched brackets: `{(})` or `({)}`
+				otherStart = started === "{" ? "(" : "{";
+				otherOpposite = startOppositesMap[otherStart];
+				
+				if(rest[curIndex+1] === otherOpposite){
+					callAttrStart(state, curIndex+2, handler, rest);
+					i++;
+				}else{
+					callAttrStart(state, curIndex+1, handler, rest);
+				}
+
 				state.lookingForEq = true;
 			} 
 			else if(space.test(cur) && started !== "{" && started !== "(") {
