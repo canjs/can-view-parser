@@ -580,3 +580,60 @@ test('tags with data attributes are allowed in comments (#2)', function() {
 		[ "done", [] ]
 	]));
 });
+
+test('spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["{foo\\sbar}"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["{foo\\sbar}"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo bar}='a'></h1>", makeChecks(tests));
+});
+
+test('for attributes without values, spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["{foo\\s}"]],
+		["attrEnd", ["{foo\\s}"]],
+		["attrStart", ["{bar\\s}"]],
+		["attrEnd", ["{bar\\s}"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo } {bar }></h1>", makeChecks(tests));
+});
+
+test('mismatched brackets work: {(foo})', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["{(foo})"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["{(foo})"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {(foo})='a'></h1>", makeChecks(tests));
+});
+
+test('mismatched brackets work: ({foo)}', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["({foo)}"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["({foo)}"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 ({foo)}='a'></h1>", makeChecks(tests));
+});
