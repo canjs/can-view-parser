@@ -393,7 +393,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 		}
 		
 		// if we are currently in a name:
-		//  when the name starts with `{` or `)`
+		//  when the name starts with `{` or `(`
 		//  it isn't finished until the matching end character is found
 		//  otherwise, a space finishes the name
 		else if(state.inName) {
