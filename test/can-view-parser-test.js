@@ -581,6 +581,24 @@ test('tags with data attributes are allowed in comments (#2)', function() {
 	]));
 });
 
+
+test('multiline special comments (#14)', function() {
+	parser("{{! foo !}}", makeChecks([
+		[ "special", [ "! foo !" ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{! {{foo}} {{bar}} !}}", makeChecks([
+		[ "special", [ "! {{foo}} {{bar}} !" ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{!\n{{foo}}\n{{bar}}\n!}}", makeChecks([
+		[ "special", [ "!\n{{foo}}\n{{bar}}\n!" ] ],
+		[ "done", [] ]
+	]));
+});
+
 test('spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
 	var tests = [
 		["start", ["h1", false]],
@@ -636,4 +654,5 @@ test('mismatched brackets work: ({foo)}', function () {
 	];
 
 	parser("<h1 ({foo)}='a'></h1>", makeChecks(tests));
+
 });
