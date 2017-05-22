@@ -507,6 +507,7 @@ test('{{}} in attribute values are handled correctly (#34)', function () {
 	parser("<h1 class='{{foo}}a'></h1>", makeChecks(tests));
 });
 
+//!steal-remove-start
 test('warn on missmatched tag (canjs/canjs#1476)', function() {
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
@@ -561,6 +562,7 @@ test('warn on missmatched tag (canjs/canjs#1476)', function() {
 		"expected closing tag </div>"
 	]);
 });
+//!steal-remove-end
 
 test('tags with data attributes are allowed in comments (#2)', function() {
 	parser("{{! foo }}", makeChecks([
@@ -579,6 +581,7 @@ test('tags with data attributes are allowed in comments (#2)', function() {
 	]));
 });
 
+
 test('multiline special comments (#14)', function() {
 	parser("{{! foo !}}", makeChecks([
 		[ "special", [ "! foo !" ] ],
@@ -594,4 +597,62 @@ test('multiline special comments (#14)', function() {
 		[ "special", [ "!\n{{foo}}\n{{bar}}\n!" ] ],
 		[ "done", [] ]
 	]));
+});
+
+test('spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["{foo\\sbar}"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["{foo\\sbar}"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo bar}='a'></h1>", makeChecks(tests));
+});
+
+test('for attributes without values, spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["{foo\\s}"]],
+		["attrEnd", ["{foo\\s}"]],
+		["attrStart", ["{bar\\s}"]],
+		["attrEnd", ["{bar\\s}"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo } {bar }></h1>", makeChecks(tests));
+});
+
+test('mismatched brackets work: {(foo})', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["{(foo})"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["{(foo})"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {(foo})='a'></h1>", makeChecks(tests));
+});
+
+test('mismatched brackets work: ({foo)}', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["({foo)}"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["({foo)}"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 ({foo)}='a'></h1>", makeChecks(tests));
+
 });

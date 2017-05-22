@@ -31,6 +31,7 @@ var alphaNumeric = "A-Za-z0-9",
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
 	defaultMagicMatch = new RegExp("\\{\\{(![\\s\\S]*?!|[\\s\\S]*?)\\}\\}\\}?","g"),
 	space = /\s/,
+	spacesRegex = /\s/g,
 	alphaRegex = new RegExp('['+ alphaNumeric + ']');
 
 // Empty Elements - HTML 5
@@ -51,6 +52,9 @@ var special = makeMap("script");
 
 // Callback names on `handler`.
 var tokenTypes = "start,end,close,attrStart,attrEnd,attrValue,chars,comment,special,done".split(",");
+
+//maps end characters to start characters
+var startOppositesMap = {"{": "}", "(":")"};
 
 var fn = function(){};
 
@@ -270,6 +274,10 @@ var callAttrStart = function(state, curIndex, handler, rest){
 		dev.warn("can-view-parser: Found attribute with name: ", oldAttrName, ". Converting to: ", newAttrName);
 		//!steal-remove-end
 	}
+
+	//encode spaces
+	newAttrName = newAttrName.replace(spacesRegex, "\\s");
+
 	state.attrStart = newAttrName;
 	handler.attrStart(state.attrStart);
 	state.inName = false;
@@ -314,7 +322,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 
 	var magicMatch = handler.magicMatch || defaultMagicMatch,
 		magicStart = handler.magicStart || defaultMagicStart;
-
+  
 	var i = 0;
 	var curIndex;
 	var state = {
@@ -328,6 +336,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 		lookingForValue: false,
 		lookingForEq : false
 	};
+
 	while(i < rest.length) {
 		curIndex = i;
 		var cur = rest.charAt(i);
@@ -377,22 +386,36 @@ HTMLParser.parseAttrs = function(rest, handler){
 			// if we haven't yet started this attribute `{{}}=foo` case:
 			if(!state.attrStart) {
 				callAttrStart(state, curIndex, handler, rest);
-
-				// if the equal sign is the last character
-				// we need to end the attribute
-				if(i === rest.length){
-					callAttrEnd(state, curIndex, handler, rest);
-				}
 			}
 			state.lookingForValue = true;
 			state.lookingForEq = false;
 			state.lookingForName = false;
 		}
-		// if we are currently in a name, check if we found a space
+		
+		// if we are currently in a name:
+		//  when the name starts with `{` or `(`
+		//  it isn't finished until the matching end character is found
+		//  otherwise, a space finishes the name
 		else if(state.inName) {
-			if(space.test(cur)) {
-				callAttrStart(state, curIndex, handler, rest);
+			var started = rest[ state.nameStart ],
+					otherStart, otherOpposite;
+			if(startOppositesMap[started] === cur) {
+				//handle mismatched brackets: `{(})` or `({)}`
+				otherStart = started === "{" ? "(" : "{";
+				otherOpposite = startOppositesMap[otherStart];
+				
+				if(rest[curIndex+1] === otherOpposite){
+					callAttrStart(state, curIndex+2, handler, rest);
+					i++;
+				}else{
+					callAttrStart(state, curIndex+1, handler, rest);
+				}
+
 				state.lookingForEq = true;
+			} 
+			else if(space.test(cur) && started !== "{" && started !== "(") {
+					callAttrStart(state, curIndex, handler, rest);
+					state.lookingForEq = true;
 			}
 		}
 		else if(state.lookingForName) {
@@ -426,9 +449,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 	if(state.inName) {
 		callAttrStart(state, curIndex+1, handler, rest);
 		callAttrEnd(state, curIndex+1, handler, rest);
-	} else if(state.lookingForEq) {
-		callAttrEnd(state, curIndex+1, handler, rest);
-	} else if(state.inValue) {
+	} else if(state.lookingForEq || state.lookingForValue || state.inValue) {
 		callAttrEnd(state, curIndex+1, handler, rest);
 	}
 	magicMatch.lastIndex = 0;
