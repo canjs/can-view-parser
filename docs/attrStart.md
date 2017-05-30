@@ -4,4 +4,8 @@
 
 Called when an attribute is found on an element.
 
+Handles encoding of certain characthers:
+1. Spaces (` `) - Encoded to `\s`.
+1. Forward Slashes (`/`) - Encoded to `\f`.
+
 @param {String} attrName The name of the attribute.
