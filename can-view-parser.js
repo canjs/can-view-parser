@@ -32,7 +32,8 @@ var alphaNumeric = "A-Za-z0-9",
 	defaultMagicMatch = new RegExp("\\{\\{(![\\s\\S]*?!|[\\s\\S]*?)\\}\\}\\}?","g"),
 	space = /\s/,
 	spacesRegex = /\s/g,
-	alphaRegex = new RegExp('['+ alphaNumeric + ']');
+	alphaRegex = new RegExp('['+ alphaNumeric + ']'),
+	forwardSlashRegex = /\//g;
 
 // Empty Elements - HTML 5
 var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
@@ -277,6 +278,9 @@ var callAttrStart = function(state, curIndex, handler, rest){
 
 	//encode spaces
 	newAttrName = newAttrName.replace(spacesRegex, "\\s");
+
+	//encode forward slashes
+	newAttrName = newAttrName.replace(forwardSlashRegex, "\\f");
 
 	state.attrStart = newAttrName;
 	handler.attrStart(state.attrStart);

@@ -656,3 +656,18 @@ test('mismatched brackets work: ({foo)}', function () {
 	parser("<h1 ({foo)}='a'></h1>", makeChecks(tests));
 
 });
+
+
+test('forward slashes are encoded (#52)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["{foo\\fbar}"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["{foo\\fbar}"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo/bar}='a'></h1>", makeChecks(tests));
+});
