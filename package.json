@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "can-namespace": "1.0.0",
-    "can-util": "^3.9.0-pre.4"
+    "can-util": "^3.9.5"
   },
   "bit-docs": {
     "dependencies": {
