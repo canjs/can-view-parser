@@ -33,7 +33,8 @@ var alphaNumeric = "A-Za-z0-9",
 	space = /\s/,
 	spacesRegex = /\s/g,
 	alphaRegex = new RegExp('['+ alphaNumeric + ']'),
-	forwardSlashRegex = /\//g;
+	forwardSlashRegex = /\//g,
+	capitalLetterRegex = /[A-Z]/g;
 
 // Empty Elements - HTML 5
 var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
@@ -269,11 +270,21 @@ var callAttrStart = function(state, curIndex, handler, rest){
 	var attrName = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex),
 		newAttrName = attrName,
 		oldAttrName = attrName;
+
 	if (!caseMattersAttributes[attrName] && camelCase.test(attrName)) {
-		newAttrName = attrName.replace(camelCase, camelCaseToSpinalCase);
-		//!steal-remove-start
-		dev.warn("can-view-parser: Found attribute with name: ", oldAttrName, ". Converting to: ", newAttrName);
-		//!steal-remove-end
+		// if attrname starts with `on:`, encode capital letters
+		// to allow `on:fooBar` but prevent `(fooBar)`, which is not supported
+		if (attrName.indexOf('on:') === 0) {
+			newAttrName = attrName
+				.replace(capitalLetterRegex, function(char) {
+					return '\\c' + char.toLowerCase();
+				});
+		} else {
+			newAttrName = attrName.replace(camelCase, camelCaseToSpinalCase);
+			//!steal-remove-start
+			dev.warn("can-view-parser: Found attribute with name: ", oldAttrName, ". Converting to: ", newAttrName);
+			//!steal-remove-end
+		}
 	}
 
 	//encode spaces
