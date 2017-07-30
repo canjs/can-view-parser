@@ -671,3 +671,17 @@ test('forward slashes are encoded (#52)', function () {
 
 	parser("<h1 {foo/bar}='a'></h1>", makeChecks(tests));
 });
+
+test('camelCase properties following on: are encoded', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", ["on:foo\\cbar"]],
+		["attrValue", ["a"]],
+		["attrEnd", ["on:foo\\cbar"]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 on:fooBar='a'></h1>", makeChecks(tests));
+});
