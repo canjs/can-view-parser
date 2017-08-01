@@ -1,6 +1,7 @@
 /* jshint maxdepth:7,node:true, latedef:false */
 var namespace = require('can-namespace'),
-	dev = require('can-util/js/dev/dev');
+	dev = require('can-util/js/dev/dev'),
+	encoder = require('can-attribute-encoder');
 
 function each(items, callback){
 	for ( var i = 0; i < items.length; i++ ) {
@@ -26,21 +27,14 @@ function handleIntermediate(intermediate, handler){
 
 var alphaNumeric = "A-Za-z0-9",
 	alphaNumericHU = "-:_"+alphaNumeric,
-	camelCase = /([a-z])([A-Z])/g,
 	defaultMagicStart = "{{",
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
 	defaultMagicMatch = new RegExp("\\{\\{(![\\s\\S]*?!|[\\s\\S]*?)\\}\\}\\}?","g"),
 	space = /\s/,
-	spacesRegex = /\s/g,
-	alphaRegex = new RegExp('['+ alphaNumeric + ']'),
-	forwardSlashRegex = /\//g,
-	capitalLetterRegex = /[A-Z]/g;
+	alphaRegex = new RegExp('['+ alphaNumeric + ']');
 
 // Empty Elements - HTML 5
 var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
-
-// Attributes for which the case matters - shouldn’t be lowercased.
-var caseMattersAttributes = makeMap("allowReorder,attributeName,attributeType,autoReverse,baseFrequency,baseProfile,calcMode,clipPathUnits,contentScriptType,contentStyleType,diffuseConstant,edgeMode,externalResourcesRequired,filterRes,filterUnits,glyphRef,gradientTransform,gradientUnits,kernelMatrix,kernelUnitLength,keyPoints,keySplines,keyTimes,lengthAdjust,limitingConeAngle,markerHeight,markerUnits,markerWidth,maskContentUnits,maskUnits,patternContentUnits,patternTransform,patternUnits,pointsAtX,pointsAtY,pointsAtZ,preserveAlpha,preserveAspectRatio,primitiveUnits,repeatCount,repeatDur,requiredExtensions,requiredFeatures,specularConstant,specularExponent,spreadMethod,startOffset,stdDeviation,stitchTiles,surfaceScale,systemLanguage,tableValues,textLength,viewBox,viewTarget,xChannelSelector,yChannelSelector");
 
 // Elements for which tag case matters - shouldn't be lowercased.
 var caseMattersElements = makeMap("altGlyph,altGlyphDef,altGlyphItem,animateColor,animateMotion,animateTransform,clipPath,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,foreignObject,glyphRef,linearGradient,radialGradient,textPath");
@@ -268,30 +262,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 var callAttrStart = function(state, curIndex, handler, rest){
 	var attrName = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex),
-		newAttrName = attrName,
-		oldAttrName = attrName;
-
-	if (!caseMattersAttributes[attrName] && camelCase.test(attrName)) {
-		// if attrname starts with `on:`, encode capital letters
-		// to allow `on:fooBar` but prevent `(fooBar)`, which is not supported
-		if (attrName.indexOf('on:') === 0) {
-			newAttrName = attrName
-				.replace(capitalLetterRegex, function(char) {
-					return '\\c' + char.toLowerCase();
-				});
-		} else {
-			newAttrName = attrName.replace(camelCase, camelCaseToSpinalCase);
-			//!steal-remove-start
-			dev.warn("can-view-parser: Found attribute with name: ", oldAttrName, ". Converting to: ", newAttrName);
-			//!steal-remove-end
-		}
-	}
-
-	//encode spaces
-	newAttrName = newAttrName.replace(spacesRegex, "\\s");
-
-	//encode forward slashes
-	newAttrName = newAttrName.replace(forwardSlashRegex, "\\f");
+		newAttrName = encoder.encode(attrName);
 
 	state.attrStart = newAttrName;
 	handler.attrStart(state.attrStart);
@@ -324,10 +295,6 @@ var findBreak = function(str, magicStart) {
 		}
 	}
 	return -1;
-};
-
-var camelCaseToSpinalCase = function (match, lowerCaseChar, upperCaseChar) {
-	return lowerCaseChar + "-" + upperCaseChar.toLowerCase();
 };
 
 HTMLParser.parseAttrs = function(rest, handler){

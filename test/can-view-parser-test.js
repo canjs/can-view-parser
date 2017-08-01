@@ -325,9 +325,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", ["(click)"]],
+		["attrStart", [":lp:click:rp:"]],
 		["attrValue", ["test"]],
-		["attrEnd", ["(click)"]],
+		["attrEnd", [":lp:click:rp:"]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -335,9 +335,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click-me)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", ["(click-me)"]],
+		["attrStart", [":lp:click-me:rp:"]],
 		["attrValue", ["test"]],
-		["attrEnd", ["(click-me)"]],
+		["attrEnd", [":lp:click-me:rp:"]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -345,9 +345,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click_me)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", ["(click_me)"]],
+		["attrStart", [":lp:click_me:rp:"]],
 		["attrValue", ["test"]],
-		["attrEnd", ["(click_me)"]],
+		["attrEnd", [":lp:click_me:rp:"]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -358,9 +358,9 @@ test('allow () and [] to enclose attributes', function() {
 test('allow {} to enclose attributes', function() {
 
 	parser.parseAttrs('{a}="b" {{#c}}d{{/c}}',makeChecks([
-		["attrStart", ["{a}"]],
+		["attrStart", [":lb:a:rb:"]],
 		["attrValue", ["b"]],
-		["attrEnd", ["{a}"]],
+		["attrEnd", [":lb:a:rb:"]],
 		["special",["#c"]],
 		["attrStart", ["d"]],
 		["attrEnd", ["d"]],
@@ -436,9 +436,9 @@ test('quotes around attributes and other lazy attribute writing (#2097)', functi
 
 test('camelCased attributes are converted to spinal-case', function () {
 	parser.parseAttrs("({camelCase})='assigned'", makeChecks([
-		["attrStart", ["({camel-case})"]],
+		["attrStart", [":lp::lb:camel-case:rb::rp:"]],
 		["attrValue", ["assigned"]],
-		["attrEnd", ["({camel-case})"]],
+		["attrEnd", [":lp::lb:camel-case:rb::rp:"]],
 	]));
 });
 
@@ -451,11 +451,11 @@ test('elements that have attributes with equal signs and no values are handled a
 		["attrStart", ["type"]],
 		["attrValue", ["checkbox"]],
 		["attrEnd", ["type"]],
-		["attrStart", ["{($checked)}"]],
+		["attrStart", [":lb::lp::d:checked:rp::rb:"]],
 		["attrValue", ["complete"]],
-		["attrEnd", ["{($checked)}"]],
-		["attrStart", ["($change)"]],
-		["attrEnd", ["($change)"]],
+		["attrEnd", [":lb::lp::d:checked:rp::rb:"]],
+		["attrStart", [":lp::d:change:rp:"]],
+		["attrEnd", [":lp::d:change:rp:"]],
 		["end", ["input"]],
 		["done", []]
 	]));
@@ -602,9 +602,9 @@ test('multiline special comments (#14)', function() {
 test('spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["{foo\\sbar}"]],
+		["attrStart", [":lb:foo:s:bar:rb:"]],
 		["attrValue", ["a"]],
-		["attrEnd", ["{foo\\sbar}"]],
+		["attrEnd", [":lb:foo:s:bar:rb:"]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -616,10 +616,10 @@ test('spaces in attribute names that start with `{` or `(` are encoded (#48)', f
 test('for attributes without values, spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["{foo\\s}"]],
-		["attrEnd", ["{foo\\s}"]],
-		["attrStart", ["{bar\\s}"]],
-		["attrEnd", ["{bar\\s}"]],
+		["attrStart", [":lb:foo:s::rb:"]],
+		["attrEnd", [":lb:foo:s::rb:"]],
+		["attrStart", [":lb:bar:s::rb:"]],
+		["attrEnd", [":lb:bar:s::rb:"]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -631,9 +631,9 @@ test('for attributes without values, spaces in attribute names that start with `
 test('mismatched brackets work: {(foo})', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["{(foo})"]],
+		["attrStart", [":lb::lp:foo:rb::rp:"]],
 		["attrValue", ["a"]],
-		["attrEnd", ["{(foo})"]],
+		["attrEnd", [":lb::lp:foo:rb::rp:"]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -645,9 +645,9 @@ test('mismatched brackets work: {(foo})', function () {
 test('mismatched brackets work: ({foo)}', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["({foo)}"]],
+		["attrStart", [":lp::lb:foo:rp::rb:"]],
 		["attrValue", ["a"]],
-		["attrEnd", ["({foo)}"]],
+		["attrEnd", [":lp::lb:foo:rp::rb:"]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -661,9 +661,9 @@ test('mismatched brackets work: ({foo)}', function () {
 test('forward slashes are encoded (#52)', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["{foo\\fbar}"]],
+		["attrStart", [":lb:foo:f:bar:rb:"]],
 		["attrValue", ["a"]],
-		["attrEnd", ["{foo\\fbar}"]],
+		["attrEnd", [":lb:foo:f:bar:rb:"]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -675,13 +675,13 @@ test('forward slashes are encoded (#52)', function () {
 test('camelCase properties following on: are encoded', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["on:foo\\cbar"]],
+		["attrStart", ["on:foo:u:bar:u:baz"]],
 		["attrValue", ["a"]],
-		["attrEnd", ["on:foo\\cbar"]],
+		["attrEnd", ["on:foo:u:bar:u:baz"]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
 	];
 
-	parser("<h1 on:fooBar='a'></h1>", makeChecks(tests));
+	parser("<h1 on:fooBarBaz='a'></h1>", makeChecks(tests));
 });
