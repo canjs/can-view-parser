@@ -672,16 +672,25 @@ test('forward slashes are encoded (#52)', function () {
 	parser("<h1 {foo/bar}='a'></h1>", makeChecks(tests));
 });
 
-test('camelCase properties following on: are encoded', function () {
+test('camelCase properties are encoded with on:, :to, :from, :bind bindings', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["on:foo:u:bar:u:baz"]],
-		["attrValue", ["a"]],
-		["attrEnd", ["on:foo:u:bar:u:baz"]],
+		["attrStart", ["on:a:u:b"]],
+		["attrValue", ["c"]],
+		["attrEnd", ["on:a:u:b"]],
+		["attrStart", ["d:u:e:to"]],
+		["attrValue", ["f"]],
+		["attrEnd", ["d:u:e:to"]],
+		["attrStart", ["g:u:h:from"]],
+		["attrValue", ["i"]],
+		["attrEnd", ["g:u:h:from"]],
+		["attrStart", ["j:u:k:bind"]],
+		["attrValue", ["l"]],
+		["attrEnd", ["j:u:k:bind"]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
 	];
 
-	parser("<h1 on:fooBarBaz='a'></h1>", makeChecks(tests));
+	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(tests));
 });
