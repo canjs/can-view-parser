@@ -1,6 +1,7 @@
 var parser = require('can-view-parser');
 var QUnit = require('steal-qunit');
 var canDev = require('can-util/js/dev/dev');
+var encoder = require('can-attribute-encoder');
 
 QUnit.module("can-view-parser");
 
@@ -325,9 +326,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", [":lp:click:rp:"]],
+		["attrStart", [encoder.encode("(click)")]],
 		["attrValue", ["test"]],
-		["attrEnd", [":lp:click:rp:"]],
+		["attrEnd", [encoder.encode("(click)")]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -335,9 +336,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click-me)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", [":lp:click-me:rp:"]],
+		["attrStart", [encoder.encode("(click-me)")]],
 		["attrValue", ["test"]],
-		["attrEnd", [":lp:click-me:rp:"]],
+		["attrEnd", [encoder.encode("(click-me)")]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -345,9 +346,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click_me)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", [":lp:click_me:rp:"]],
+		["attrStart", [encoder.encode("(click_me)")]],
 		["attrValue", ["test"]],
-		["attrEnd", [":lp:click_me:rp:"]],
+		["attrEnd", [encoder.encode("(click_me)")]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -358,9 +359,9 @@ test('allow () and [] to enclose attributes', function() {
 test('allow {} to enclose attributes', function() {
 
 	parser.parseAttrs('{a}="b" {{#c}}d{{/c}}',makeChecks([
-		["attrStart", [":lb:a:rb:"]],
+		["attrStart", [encoder.encode("{a}")]],
 		["attrValue", ["b"]],
-		["attrEnd", [":lb:a:rb:"]],
+		["attrEnd", [encoder.encode("{a}")]],
 		["special",["#c"]],
 		["attrStart", ["d"]],
 		["attrEnd", ["d"]],
@@ -436,9 +437,9 @@ test('quotes around attributes and other lazy attribute writing (#2097)', functi
 
 test('camelCased attributes are converted to spinal-case', function () {
 	parser.parseAttrs("({camelCase})='assigned'", makeChecks([
-		["attrStart", [":lp::lb:camel-case:rb::rp:"]],
+		["attrStart", [encoder.encode("({camelCase})")]],
 		["attrValue", ["assigned"]],
-		["attrEnd", [":lp::lb:camel-case:rb::rp:"]],
+		["attrEnd", [encoder.encode("({camelCase})")]],
 	]));
 });
 
@@ -451,11 +452,11 @@ test('elements that have attributes with equal signs and no values are handled a
 		["attrStart", ["type"]],
 		["attrValue", ["checkbox"]],
 		["attrEnd", ["type"]],
-		["attrStart", [":lb::lp::d:checked:rp::rb:"]],
+		["attrStart", [encoder.encode("{($checked)}")]],
 		["attrValue", ["complete"]],
-		["attrEnd", [":lb::lp::d:checked:rp::rb:"]],
-		["attrStart", [":lp::d:change:rp:"]],
-		["attrEnd", [":lp::d:change:rp:"]],
+		["attrEnd", [encoder.encode("{($checked)}")]],
+		["attrStart", [encoder.encode("($change)")]],
+		["attrEnd", [encoder.encode("($change)")]],
 		["end", ["input"]],
 		["done", []]
 	]));
@@ -602,9 +603,9 @@ test('multiline special comments (#14)', function() {
 test('spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", [":lb:foo:s:bar:rb:"]],
+		["attrStart", [encoder.encode("{foo bar}")]],
 		["attrValue", ["a"]],
-		["attrEnd", [":lb:foo:s:bar:rb:"]],
+		["attrEnd", [encoder.encode("{foo bar}")]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -616,10 +617,10 @@ test('spaces in attribute names that start with `{` or `(` are encoded (#48)', f
 test('for attributes without values, spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", [":lb:foo:s::rb:"]],
-		["attrEnd", [":lb:foo:s::rb:"]],
-		["attrStart", [":lb:bar:s::rb:"]],
-		["attrEnd", [":lb:bar:s::rb:"]],
+		["attrStart", [encoder.encode("{foo }")]],
+		["attrEnd", [encoder.encode("{foo }")]],
+		["attrStart", [encoder.encode("{bar }")]],
+		["attrEnd", [encoder.encode("{bar }")]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -631,9 +632,9 @@ test('for attributes without values, spaces in attribute names that start with `
 test('mismatched brackets work: {(foo})', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", [":lb::lp:foo:rb::rp:"]],
+		["attrStart", [encoder.encode("{(foo})")]],
 		["attrValue", ["a"]],
-		["attrEnd", [":lb::lp:foo:rb::rp:"]],
+		["attrEnd", [encoder.encode("{(foo})")]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -645,9 +646,9 @@ test('mismatched brackets work: {(foo})', function () {
 test('mismatched brackets work: ({foo)}', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", [":lp::lb:foo:rp::rb:"]],
+		["attrStart", [encoder.encode("({foo)}")]],
 		["attrValue", ["a"]],
-		["attrEnd", [":lp::lb:foo:rp::rb:"]],
+		["attrEnd", [encoder.encode("({foo)}")]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -661,9 +662,9 @@ test('mismatched brackets work: ({foo)}', function () {
 test('forward slashes are encoded (#52)', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", [":lb:foo:f:bar:rb:"]],
+		["attrStart", [encoder.encode("{foo/bar}")]],
 		["attrValue", ["a"]],
-		["attrEnd", [":lb:foo:f:bar:rb:"]],
+		["attrEnd", [encoder.encode("{foo/bar}")]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
@@ -675,18 +676,18 @@ test('forward slashes are encoded (#52)', function () {
 test('camelCase properties are encoded with on:, :to, :from, :bind bindings', function () {
 	var tests = [
 		["start", ["h1", false]],
-		["attrStart", ["on:a:u:b"]],
+		["attrStart", [encoder.encode("on:aB")]],
 		["attrValue", ["c"]],
-		["attrEnd", ["on:a:u:b"]],
-		["attrStart", ["d:u:e:to"]],
+		["attrEnd", [encoder.encode("on:aB")]],
+		["attrStart", [encoder.encode("dE:to")]],
 		["attrValue", ["f"]],
-		["attrEnd", ["d:u:e:to"]],
-		["attrStart", ["g:u:h:from"]],
+		["attrEnd", [encoder.encode("dE:to")]],
+		["attrStart", [encoder.encode("gH:from")]],
 		["attrValue", ["i"]],
-		["attrEnd", ["g:u:h:from"]],
-		["attrStart", ["j:u:k:bind"]],
+		["attrEnd", [encoder.encode("gH:from")]],
+		["attrStart", [encoder.encode("jK:bind")]],
 		["attrValue", ["l"]],
-		["attrEnd", ["j:u:k:bind"]],
+		["attrEnd", [encoder.encode("jK:bind")]],
 		["end", ["h1", false]],
 		["close",["h1"]],
 		["done",[]]
