@@ -33,7 +33,7 @@
     "donejs"
   ],
   "devDependencies": {
-    "bit-docs": "0.0.7",
+    "bit-docs": "0.0.8-0",
     "jshint": "^2.9.1",
     "steal": "^1.0.1",
     "steal-qunit": "^1.0.0",
