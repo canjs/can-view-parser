@@ -582,7 +582,6 @@ test('tags with data attributes are allowed in comments (#2)', function() {
 	]));
 });
 
-
 test('multiline special comments (#14)', function() {
 	parser("{{! foo !}}", makeChecks([
 		[ "special", [ "! foo !" ] ],
@@ -694,4 +693,26 @@ test('camelCase properties are encoded with on:, :to, :from, :bind bindings', fu
 	];
 
 	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(tests));
+});
+
+test('> in an attribute is correctly parsed (#36)', function() {
+	var tests = [
+		["start", ["div", false]], // <div foo=">"><hr foo=">" bar='>>->' /></div>
+		["attrStart", ["foo"]],
+		["attrValue", [">"]],
+		["attrEnd", ["foo"]],
+		["end", ["div", false]],
+			["start", ["hr", true]], // <hr foo="'>'" bar='>>->' /></div>
+			["attrStart", ["foo"]],
+			["attrValue", ["'>'"]],
+			["attrEnd", ["foo"]],
+			["attrStart", ["bar"]],
+			["attrValue", [">>->"]],
+			["attrEnd", ["bar"]],
+			["end", ["hr", true]],
+		["close", ["div"]],
+		["done", []]
+	];
+
+	parser('<div foo=">"><hr foo="\'>\'" bar=\'>>->\' /></div>', makeChecks(tests));
 });
