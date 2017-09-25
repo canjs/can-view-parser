@@ -1,6 +1,7 @@
 var parser = require('can-view-parser');
 var QUnit = require('steal-qunit');
 var canDev = require('can-util/js/dev/dev');
+var encoder = require('can-attribute-encoder');
 
 QUnit.module("can-view-parser");
 
@@ -325,9 +326,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", ["(click)"]],
+		["attrStart", [encoder.encode("(click)")]],
 		["attrValue", ["test"]],
-		["attrEnd", ["(click)"]],
+		["attrEnd", [encoder.encode("(click)")]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -335,9 +336,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click-me)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", ["(click-me)"]],
+		["attrStart", [encoder.encode("(click-me)")]],
 		["attrValue", ["test"]],
-		["attrEnd", ["(click-me)"]],
+		["attrEnd", [encoder.encode("(click-me)")]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -345,9 +346,9 @@ test('allow () and [] to enclose attributes', function() {
 
 	parser('<p (click_me)="test"></p>', makeChecks([
 		["start", ["p", false]],
-		["attrStart", ["(click_me)"]],
+		["attrStart", [encoder.encode("(click_me)")]],
 		["attrValue", ["test"]],
-		["attrEnd", ["(click_me)"]],
+		["attrEnd", [encoder.encode("(click_me)")]],
 		["end",["p"]],
 		["close",["p"]],
 		["done",[]]
@@ -358,9 +359,9 @@ test('allow () and [] to enclose attributes', function() {
 test('allow {} to enclose attributes', function() {
 
 	parser.parseAttrs('{a}="b" {{#c}}d{{/c}}',makeChecks([
-		["attrStart", ["{a}"]],
+		["attrStart", [encoder.encode("{a}")]],
 		["attrValue", ["b"]],
-		["attrEnd", ["{a}"]],
+		["attrEnd", [encoder.encode("{a}")]],
 		["special",["#c"]],
 		["attrStart", ["d"]],
 		["attrEnd", ["d"]],
@@ -436,9 +437,9 @@ test('quotes around attributes and other lazy attribute writing (#2097)', functi
 
 test('camelCased attributes are converted to spinal-case', function () {
 	parser.parseAttrs("({camelCase})='assigned'", makeChecks([
-		["attrStart", ["({camel-case})"]],
+		["attrStart", [encoder.encode("({camelCase})")]],
 		["attrValue", ["assigned"]],
-		["attrEnd", ["({camel-case})"]],
+		["attrEnd", [encoder.encode("({camelCase})")]],
 	]));
 });
 
@@ -451,11 +452,11 @@ test('elements that have attributes with equal signs and no values are handled a
 		["attrStart", ["type"]],
 		["attrValue", ["checkbox"]],
 		["attrEnd", ["type"]],
-		["attrStart", ["{($checked)}"]],
+		["attrStart", [encoder.encode("{($checked)}")]],
 		["attrValue", ["complete"]],
-		["attrEnd", ["{($checked)}"]],
-		["attrStart", ["($change)"]],
-		["attrEnd", ["($change)"]],
+		["attrEnd", [encoder.encode("{($checked)}")]],
+		["attrStart", [encoder.encode("($change)")]],
+		["attrEnd", [encoder.encode("($change)")]],
 		["end", ["input"]],
 		["done", []]
 	]));
@@ -579,6 +580,119 @@ test('tags with data attributes are allowed in comments (#2)', function() {
 		[ "special", [ "! <foo bar=\"{bam}\" /> " ] ],
 		[ "done", [] ]
 	]));
+});
+
+test('multiline special comments (#14)', function() {
+	parser("{{! foo !}}", makeChecks([
+		[ "special", [ "! foo !" ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{! {{foo}} {{bar}} !}}", makeChecks([
+		[ "special", [ "! {{foo}} {{bar}} !" ] ],
+		[ "done", [] ]
+	]));
+
+	parser("{{!\n{{foo}}\n{{bar}}\n!}}", makeChecks([
+		[ "special", [ "!\n{{foo}}\n{{bar}}\n!" ] ],
+		[ "done", [] ]
+	]));
+});
+
+test('spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", [encoder.encode("{foo bar}")]],
+		["attrValue", ["a"]],
+		["attrEnd", [encoder.encode("{foo bar}")]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo bar}='a'></h1>", makeChecks(tests));
+});
+
+test('for attributes without values, spaces in attribute names that start with `{` or `(` are encoded (#48)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", [encoder.encode("{foo }")]],
+		["attrEnd", [encoder.encode("{foo }")]],
+		["attrStart", [encoder.encode("{bar }")]],
+		["attrEnd", [encoder.encode("{bar }")]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo } {bar }></h1>", makeChecks(tests));
+});
+
+test('mismatched brackets work: {(foo})', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", [encoder.encode("{(foo})")]],
+		["attrValue", ["a"]],
+		["attrEnd", [encoder.encode("{(foo})")]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {(foo})='a'></h1>", makeChecks(tests));
+});
+
+test('mismatched brackets work: ({foo)}', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", [encoder.encode("({foo)}")]],
+		["attrValue", ["a"]],
+		["attrEnd", [encoder.encode("({foo)}")]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 ({foo)}='a'></h1>", makeChecks(tests));
+
+});
+
+
+test('forward slashes are encoded (#52)', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", [encoder.encode("{foo/bar}")]],
+		["attrValue", ["a"]],
+		["attrEnd", [encoder.encode("{foo/bar}")]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 {foo/bar}='a'></h1>", makeChecks(tests));
+});
+
+test('camelCase properties are encoded with on:, :to, :from, :bind bindings', function () {
+	var tests = [
+		["start", ["h1", false]],
+		["attrStart", [encoder.encode("on:aB")]],
+		["attrValue", ["c"]],
+		["attrEnd", [encoder.encode("on:aB")]],
+		["attrStart", [encoder.encode("dE:to")]],
+		["attrValue", ["f"]],
+		["attrEnd", [encoder.encode("dE:to")]],
+		["attrStart", [encoder.encode("gH:from")]],
+		["attrValue", ["i"]],
+		["attrEnd", [encoder.encode("gH:from")]],
+		["attrStart", [encoder.encode("jK:bind")]],
+		["attrValue", ["l"]],
+		["attrEnd", [encoder.encode("jK:bind")]],
+		["end", ["h1", false]],
+		["close",["h1"]],
+		["done",[]]
+	];
+
+	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(tests));
 });
 
 test('> in an attribute is correctly parsed (#36)', function() {

@@ -1,6 +1,6 @@
 {
   "name": "can-view-parser",
-  "version": "3.0.8",
+  "version": "3.5.0",
   "description": "Parses html and magic tags",
   "homepage": "http://canjs.com",
   "repository": {
@@ -19,12 +19,11 @@
     "testee": "testee test/test.html --browsers firefox",
     "test": "npm run jshint && npm run testee",
     "jshint": "jshint ./*.js --config",
-    "release:pre": "npm version prerelease && npm publish",
+    "release:pre": "npm version prerelease && npm publish --tag=pre",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
     "build": "node build.js",
-    "document": "bit-docs",
     "develop": "done-serve --static --develop --port 8080"
   },
   "main": "can-view-parser",
@@ -39,29 +38,14 @@
     "steal": "^1.0.1",
     "steal-qunit": "^1.0.0",
     "steal-tools": "^1.0.0",
-    "testee": "^0.3.0",
-    "generator-donejs": "^0.9.0",
-    "donejs-cli": "^0.9.5",
-    "done-serve": "^0.2.0"
+    "testee": "^0.7.0",
+    "generator-donejs": "^1.0.5",
+    "donejs-cli": "^1.0.1",
+    "done-serve": "^1.2.0"
   },
   "dependencies": {
+    "can-attribute-encoder": "^0.3.0",
     "can-namespace": "1.0.0",
-    "can-util": "^3.1.1"
-  },
-  "bit-docs": {
-    "dependencies": {
-      "bit-docs-glob-finder": "^0.0.5",
-      "bit-docs-dev": "^0.0.3",
-      "bit-docs-js": "^0.0.3",
-      "bit-docs-generate-readme": "^0.0.8"
-    },
-    "glob": {
-      "pattern": "**/*.{js,md}",
-      "ignore": "node_modules/**/*"
-    },
-    "readme": {
-      "apis": "./docs/apis.json"
-    },
-    "parent": "can-view-parser"
+    "can-util": "^3.9.5"
   }
 }
