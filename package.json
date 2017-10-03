@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "can-attribute-encoder": "^0.3.0",
-    "can-namespace": "1.0.0",
-    "can-util": "^3.9.5"
+    "can-log": "^0.1.0",
+    "can-namespace": "1.0.0"
   }
 }
