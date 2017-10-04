@@ -1,6 +1,6 @@
 /* jshint maxdepth:7,node:true, latedef:false */
 var namespace = require('can-namespace'),
-	dev = require('can-util/js/dev/dev'),
+	dev = require('can-log/dev/dev'),
 	encoder = require('can-attribute-encoder');
 
 function each(items, callback){

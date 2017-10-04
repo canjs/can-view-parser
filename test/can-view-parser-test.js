@@ -1,6 +1,6 @@
 var parser = require('can-view-parser');
 var QUnit = require('steal-qunit');
-var canDev = require('can-util/js/dev/dev');
+var canDev = require('can-log/dev/dev');
 var encoder = require('can-attribute-encoder');
 
 QUnit.module("can-view-parser");
