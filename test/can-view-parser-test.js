@@ -695,3 +695,44 @@ test('camelCase properties are encoded with on:, :to, :from, :bind bindings', fu
 
 	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(tests));
 });
+
+//!steal-remove-start
+test('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', function () {
+	var makeWarnChecks = function(input, texts) {
+		var count = 0;
+		var _warn = canDev.warn;
+		canDev.warn = function(text) {
+			equal(text, texts[count++]);
+		};
+
+		parser(input, {
+			start: function(tagName, unary) {},
+			end: function(tagName, unary) {},
+			attrStart: function(attrName) {},
+			attrEnd: function(attrName) {},
+			attrValue: function(val) {},
+			done: function() {}
+		});
+
+		equal(count, texts.length);
+
+		canDev.warn = _warn;
+	};
+
+	makeWarnChecks('<my-input {value}="name" (value)="updateNameOnEven(%viewModel.value)/>', [
+		"End quote is missing for updateNameOnEven(%viewModel.value)"
+	]);
+
+	makeWarnChecks('<input on:click="callback />', [
+		"End quote is missing for callback"
+	]);
+
+	makeWarnChecks('<my-input {an-attr}="aValue />', [
+		"End quote is missing for aValue"
+	]);
+
+	makeWarnChecks("<my-input {an-other-attr}='anotherValue />", [
+		"End quote is missing for anotherValue"
+	]);
+});
+//!steal-remove-end

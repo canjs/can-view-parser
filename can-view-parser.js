@@ -271,12 +271,22 @@ var callAttrStart = function(state, curIndex, handler, rest){
 
 var callAttrEnd = function(state, curIndex, handler, rest){
 	if(state.valueStart !== undefined && state.valueStart < curIndex) {
-		handler.attrValue(rest.substring(state.valueStart, curIndex));
+		var quotedVal = rest.substring(state.valueStart - 1, curIndex + 2);
+		var val = rest.substring(state.valueStart, curIndex);
+		quotedVal = quotedVal.trim();
+		//!steal-remove-start
+		if (state.inQuote !== quotedVal.charAt(quotedVal.length - 1)) {
+			dev.warn("End quote is missing for " + val);
+		}
+		//!steal-remove-end
+
+		handler.attrValue(val);
 	}
 	// if this never got to be inValue, like `DISABLED` then send a attrValue
 	else if(!state.inValue){
 		//handler.attrValue(state.attrStart);
 	}
+
 	handler.attrEnd(state.attrStart);
 	state.attrStart = undefined;
 	state.valueStart = undefined;
@@ -304,7 +314,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 
 	var magicMatch = handler.magicMatch || defaultMagicMatch,
 		magicStart = handler.magicStart || defaultMagicStart;
-  
+
 	var i = 0;
 	var curIndex;
 	var state = {
@@ -373,7 +383,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 			state.lookingForEq = false;
 			state.lookingForName = false;
 		}
-		
+
 		// if we are currently in a name:
 		//  when the name starts with `{` or `(`
 		//  it isn't finished until the matching end character is found
@@ -385,7 +395,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 				//handle mismatched brackets: `{(})` or `({)}`
 				otherStart = started === "{" ? "(" : "{";
 				otherOpposite = startOppositesMap[otherStart];
-				
+
 				if(rest[curIndex+1] === otherOpposite){
 					callAttrStart(state, curIndex+2, handler, rest);
 					i++;
@@ -394,7 +404,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 				}
 
 				state.lookingForEq = true;
-			} 
+			}
 			else if(space.test(cur) && started !== "{" && started !== "(") {
 					callAttrStart(state, curIndex, handler, rest);
 					state.lookingForEq = true;
