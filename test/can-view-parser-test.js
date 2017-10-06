@@ -10,7 +10,7 @@ var makeChecks = function(tests){
 	var makeCheck = function(name){
 		return function(){
 			if(count >= tests.length) {
-				ok(false, "called "+name+" with "+arguments[0]);
+				ok(false, "called "+name+" with "+JSON.stringify([].slice.call(arguments)));
 			} else {
 				var test = tests[count],
 					args = test[1];
@@ -509,6 +509,86 @@ test('{{}} in attribute values are handled correctly (#34)', function () {
 });
 
 //!steal-remove-start
+test('counts lines properly', function() {
+	parser(`
+	<style>
+		.header {
+			color: black;
+		}
+	</style>
+
+	<h1
+		class="header"
+	>
+		Header
+	</h1>
+	<article>
+		Body Line {{line1}}<br />
+		Body Line {{line2}}
+		{{#if}}
+			{{.}}
+		{{/if}}
+	</article>
+`, makeChecks([
+		[ "chars", [ `
+	`, 1 ] ],
+
+		[ "start", [ "style", false, 2 ] ],
+		[ "end", [ "style", false, 2 ] ],
+		[ "chars", [ `
+		.header {
+			color: black;
+		}
+	`, 2 ] ],
+		[ "close", [ "style", 6 ] ],
+		[ "chars", [ `
+
+	`, 6 ] ],
+
+		[ "start", [ "h1", false, 8 ] ],
+		[ "attrStart", [ "class", 8 ] ],
+		[ "attrValue", [ "header", 8 ] ],
+		[ "attrEnd", [ "class", 8 ] ],
+		[ "end", [ "h1", false, 10 ] ],
+		[ "chars", [ `
+		Header
+	`, 10 ] ],
+		[ "close", [ "h1", 12 ] ],
+
+		[ "chars", [ `
+	`, 12 ] ],
+
+		[ "start", [ "article", false, 13 ] ],
+		[ "end", [ "article", false, 13 ] ],
+
+		[ "chars", [ `
+		Body Line `, 13 ] ],
+		[ "special", [ "line1", 14 ] ],
+		[ "start", [ "br", true, 14 ] ],
+		[ "end", [ "br", true, 14 ] ],
+		[ "chars", [ `
+		Body Line `, 14 ] ],
+		[ "special", [ "line2", 15 ] ],
+		[ "chars", [ `
+		`, 15 ] ],
+		[ "special", [ "#if", 16 ] ],
+		[ "chars", [ `
+			`, 16 ] ],
+		[ "special", [ ".", 17 ] ],
+		[ "chars", [ `
+		`, 17 ] ],
+		[ "special", [ "/if", 18 ] ],
+		[ "chars", [ `
+	`, 18 ] ],
+
+		[ "close", [ "article", 19 ] ],
+		[ "chars", [ `
+`, 19 ] ],
+
+		[ "done", [ 20 ] ],
+	]));
+});
+
 test('warn on missmatched tag (canjs/canjs#1476)', function() {
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
@@ -530,38 +610,41 @@ test('warn on missmatched tag (canjs/canjs#1476)', function() {
 	};
 
 	makeWarnChecks("</h2><h1>Header<span></span></h1><div></div>", [
-		"unexpected closing tag </h2> in filename.stache"
+		"unexpected closing tag </h2> in filename.stache at line 1"
 	]);
 	makeWarnChecks("<h1>Header</h2><span></span></h1><div></div>", [
-		"unexpected closing tag </h2> expected </h1> in filename.stache"
+		"unexpected closing tag </h2> expected </h1> in filename.stache at line 1"
 	]);
 	makeWarnChecks("<h1>Header<span></h2></span></h1><div></div>", [
-		"unexpected closing tag </h2> expected </span> in filename.stache"
+		"unexpected closing tag </h2> expected </span> in filename.stache at line 1"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h2></h1><div></div>", [
-		"unexpected closing tag </h2> expected </h1> in filename.stache"
+		"unexpected closing tag </h2> expected </h1> in filename.stache at line 1"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h1></h2><div></div>", [
-		"unexpected closing tag </h2> in filename.stache"
+		"unexpected closing tag </h2> in filename.stache at line 1"
 	]);
-	makeWarnChecks("<h1>Header<span></span></h1><div></h2></div>", [
-		"unexpected closing tag </h2> expected </div> in filename.stache"
+	makeWarnChecks("<h1>Header<span></span></h1>\n<div></h2></div>", [
+		"unexpected closing tag </h2> expected </div> in filename.stache at line 2"
 	]);
-	makeWarnChecks("<h1>Header<span></span></h1><div></div></h2>", [
-		"unexpected closing tag </h2> in filename.stache"
+	makeWarnChecks("<h1>Header<span></span></h1>\n<div></div>\n</h2>", [
+		"unexpected closing tag </h2> in filename.stache at line 3"
 	]);
 
 	makeWarnChecks("<h1>Header<span></h2></h1><div></div>", [
-		"unexpected closing tag </h2> expected </span> in filename.stache",
-		"unexpected closing tag </h1> expected </span> in filename.stache"
+		"unexpected closing tag </h2> expected </span> in filename.stache at line 1",
+		"unexpected closing tag </h1> expected </span> in filename.stache at line 1"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h2><div></div>", [
-		"unexpected closing tag </h2> expected </h1> in filename.stache",
+		"unexpected closing tag </h2> expected </h1> in filename.stache at line 1",
 		"expected closing tag </h1> in filename.stache"
 	]);
-	makeWarnChecks("<h1>Header<span></span></h1><div></h2>", [
-		"unexpected closing tag </h2> expected </div> in filename.stache",
+	makeWarnChecks("<h1>Header<span></span></h1>\n<div></h2>", [
+		"unexpected closing tag </h2> expected </div> in filename.stache at line 2",
 		"expected closing tag </div> in filename.stache"
+	]);
+	makeWarnChecks("<h1>Header<span></span></h1><!-- \n --><div></h2></div>", [
+		"unexpected closing tag </h2> expected </div> in filename.stache at line 2"
 	]);
 });
 //!steal-remove-end
