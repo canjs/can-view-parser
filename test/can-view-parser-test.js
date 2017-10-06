@@ -518,6 +518,7 @@ test('warn on missmatched tag (canjs/canjs#1476)', function() {
 		};
 
 		parser(input, {
+			filename: "filename.stache",
 			start: function(tagName, unary) {},
 			end: function(tagName, unary) {},
 			done: function() {}
@@ -529,38 +530,38 @@ test('warn on missmatched tag (canjs/canjs#1476)', function() {
 	};
 
 	makeWarnChecks("</h2><h1>Header<span></span></h1><div></div>", [
-		"unexpected closing tag </h2>"
+		"unexpected closing tag </h2> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header</h2><span></span></h1><div></div>", [
-		"unexpected closing tag </h2> expected </h1>"
+		"unexpected closing tag </h2> expected </h1> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header<span></h2></span></h1><div></div>", [
-		"unexpected closing tag </h2> expected </span>"
+		"unexpected closing tag </h2> expected </span> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h2></h1><div></div>", [
-		"unexpected closing tag </h2> expected </h1>"
+		"unexpected closing tag </h2> expected </h1> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h1></h2><div></div>", [
-		"unexpected closing tag </h2>"
+		"unexpected closing tag </h2> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h1><div></h2></div>", [
-		"unexpected closing tag </h2> expected </div>"
+		"unexpected closing tag </h2> expected </div> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h1><div></div></h2>", [
-		"unexpected closing tag </h2>"
+		"unexpected closing tag </h2> in filename.stache"
 	]);
 
 	makeWarnChecks("<h1>Header<span></h2></h1><div></div>", [
-		"unexpected closing tag </h2> expected </span>",
-		"unexpected closing tag </h1> expected </span>"
+		"unexpected closing tag </h2> expected </span> in filename.stache",
+		"unexpected closing tag </h1> expected </span> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h2><div></div>", [
-		"unexpected closing tag </h2> expected </h1>",
-		"expected closing tag </h1>"
+		"unexpected closing tag </h2> expected </h1> in filename.stache",
+		"expected closing tag </h1> in filename.stache"
 	]);
 	makeWarnChecks("<h1>Header<span></span></h1><div></h2>", [
-		"unexpected closing tag </h2> expected </div>",
-		"expected closing tag </div>"
+		"unexpected closing tag </h2> expected </div> in filename.stache",
+		"expected closing tag </div> in filename.stache"
 	]);
 });
 //!steal-remove-end

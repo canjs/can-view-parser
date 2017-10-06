@@ -115,13 +115,28 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		//!steal-remove-start
 		if (typeof tag === 'undefined') {
 			if (stack.length > 0) {
-				dev.warn("expected closing tag </" + stack[pos] + ">");
+				if (handler.filename) {
+					dev.warn("expected closing tag </" + stack[pos] + "> in " + handler.filename);
+				}
+				else {
+					dev.warn("expected closing tag </" + stack[pos] + ">");
+				}
 			}
 		} else if (pos < 0 || pos !== stack.length - 1) {
 			if (stack.length > 0) {
-				dev.warn("unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+				if (handler.filename) {
+					dev.warn("unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + "> in " + handler.filename);
+				}
+				else {
+					dev.warn("unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+				}
 			} else {
-				dev.warn("unexpected closing tag " + tag);
+				if (handler.filename) {
+					dev.warn("unexpected closing tag " + tag + " in " + handler.filename);
+				}
+				else {
+					dev.warn("unexpected closing tag " + tag);
+				}
 			}
 		}
 		//!steal-remove-end
@@ -304,7 +319,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 
 	var magicMatch = handler.magicMatch || defaultMagicMatch,
 		magicStart = handler.magicStart || defaultMagicStart;
-  
+
 	var i = 0;
 	var curIndex;
 	var state = {
@@ -373,7 +388,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 			state.lookingForEq = false;
 			state.lookingForName = false;
 		}
-		
+
 		// if we are currently in a name:
 		//  when the name starts with `{` or `(`
 		//  it isn't finished until the matching end character is found
@@ -385,7 +400,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 				//handle mismatched brackets: `{(})` or `({)}`
 				otherStart = started === "{" ? "(" : "{";
 				otherOpposite = startOppositesMap[otherStart];
-				
+
 				if(rest[curIndex+1] === otherOpposite){
 					callAttrStart(state, curIndex+2, handler, rest);
 					i++;
@@ -394,7 +409,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 				}
 
 				state.lookingForEq = true;
-			} 
+			}
 			else if(space.test(cur) && started !== "{" && started !== "(") {
 					callAttrStart(state, curIndex, handler, rest);
 					state.lookingForEq = true;
