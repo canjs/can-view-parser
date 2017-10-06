@@ -144,7 +144,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		if (typeof tag === 'undefined') {
 			if (stack.length > 0) {
 				if (handler.filename) {
-					dev.warn("expected closing tag </" + stack[pos] + "> in " + handler.filename);
+					dev.warn(handler.filename + ": expected closing tag </" + stack[pos] + ">");
 				}
 				else {
 					dev.warn("expected closing tag </" + stack[pos] + ">");
@@ -153,17 +153,17 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		} else if (pos < 0 || pos !== stack.length - 1) {
 			if (stack.length > 0) {
 				if (handler.filename) {
-					dev.warn("unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + "> in " + handler.filename + " at line " + lineNo);
+					dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
 				}
 				else {
-					dev.warn("unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + "> at line " + lineNo);
+					dev.warn(lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
 				}
 			} else {
 				if (handler.filename) {
-					dev.warn("unexpected closing tag " + tag + " in " + handler.filename + " at line " + lineNo);
+					dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag);
 				}
 				else {
-					dev.warn("unexpected closing tag " + tag + " at line " + lineNo);
+					dev.warn(lineNo + ": unexpected closing tag " + tag);
 				}
 			}
 		}
