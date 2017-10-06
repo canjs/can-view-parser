@@ -271,10 +271,10 @@ var callAttrStart = function(state, curIndex, handler, rest){
 
 var callAttrEnd = function(state, curIndex, handler, rest){
 	if(state.valueStart !== undefined && state.valueStart < curIndex) {
-		var quotedVal = rest.substring(state.valueStart - 1, curIndex + 2);
 		var val = rest.substring(state.valueStart, curIndex);
-		quotedVal = quotedVal.trim();
 		//!steal-remove-start
+		var quotedVal = rest.substring(state.valueStart - 1, curIndex + 2);
+		quotedVal = quotedVal.trim();
 		if (state.inQuote !== quotedVal.charAt(quotedVal.length - 1)) {
 			dev.warn("End quote is missing for " + val);
 		}

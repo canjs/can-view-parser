@@ -2,6 +2,7 @@ var parser = require('can-view-parser');
 var QUnit = require('steal-qunit');
 var canDev = require('can-log/dev/dev');
 var encoder = require('can-attribute-encoder');
+var testHelpers = require('can-test-helpers');
 
 QUnit.module("can-view-parser");
 
@@ -696,8 +697,7 @@ test('camelCase properties are encoded with on:, :to, :from, :bind bindings', fu
 	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(tests));
 });
 
-//!steal-remove-start
-test('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', function () {
+testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', function () {
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
 		var _warn = canDev.warn;
@@ -735,4 +735,3 @@ test('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', fun
 		"End quote is missing for anotherValue"
 	]);
 });
-//!steal-remove-end
