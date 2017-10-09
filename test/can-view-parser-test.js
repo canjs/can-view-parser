@@ -701,9 +701,9 @@ testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/c
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
 		var _warn = canDev.warn;
-		canDev.warn = function(text) {
+		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(matched, text) {
 			equal(text, texts[count++]);
-		};
+		});
 
 		parser(input, {
 			start: function(tagName, unary) {},
@@ -714,7 +714,7 @@ testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/c
 			done: function() {}
 		});
 
-		equal(count, texts.length);
+		equal(count, teardown());
 
 		canDev.warn = _warn;
 	};
