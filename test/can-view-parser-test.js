@@ -700,7 +700,6 @@ test('camelCase properties are encoded with on:, :to, :from, :bind bindings', fu
 testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', function () {
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
-		var _warn = canDev.warn;
 		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(matched, text) {
 			equal(text, texts[count++]);
 		});
@@ -715,8 +714,6 @@ testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/c
 		});
 
 		equal(count, teardown());
-
-		canDev.warn = _warn;
 	};
 
 	makeWarnChecks('<my-input {value}="name" (value)="updateNameOnEven(%viewModel.value)/>', [
