@@ -25,6 +25,13 @@ function handleIntermediate(intermediate, handler){
 	return intermediate;
 }
 
+//!steal-remove-start
+function countLines(input) {
+	// TODO: optimize?
+	return input.split('\n').length - 1;
+}
+//!steal-remove-end
+
 var alphaNumeric = "A-Za-z0-9",
 	alphaNumericHU = "-:_"+alphaNumeric,
 	defaultMagicStart = "{{",
@@ -58,6 +65,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 	if(typeof html === "object") {
 		return handleIntermediate(html, handler);
 	}
+
 	var intermediate = [];
 	handler = handler || {};
 	if(returnIntermediate) {
@@ -66,11 +74,28 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 			var callback = handler[name] || fn;
 			handler[name] = function(){
 				if( callback.apply(this, arguments) !== false ) {
-					intermediate.push({tokenType: name, args: [].slice.call(arguments, 0) });
+					var end = arguments.length;
+
+					// the intermediate is stringified in the compiled stache templates
+					// so we want to trim the last item if it is the line number
+					if (arguments[end - 1] === undefined) {
+						end = arguments.length - 1;
+					}
+
+					//!steal-remove-start
+					// but restore line number in dev mode
+					end = arguments.length;
+					//!steal-remove-end
+
+					intermediate.push({
+						tokenType: name,
+						args: [].slice.call(arguments, 0, end),
+					});
 				}
 			};
 		});
 	}
+
 	var magicMatch = handler.magicMatch || defaultMagicMatch,
 		magicStart = handler.magicStart || defaultMagicStart;
 
@@ -82,17 +107,20 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		}
 
 		unary = empty[tagName] || !!unary;
-
-		handler.start(tagName, unary);
-
+		handler.start(tagName, unary, lineNo);
 		if (!unary) {
 			stack.push(tagName);
 		}
+
 		// find attribute or special
-		HTMLParser.parseAttrs(rest, handler);
+		HTMLParser.parseAttrs(rest, handler, lineNo);
+
+		//!steal-remove-start
+		lineNo += countLines(tag);
+		//!steal-remove-end
 
 
-		handler.end(tagName,unary);
+		handler.end(tagName, unary, lineNo);
 
 	}
 
@@ -115,13 +143,28 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		//!steal-remove-start
 		if (typeof tag === 'undefined') {
 			if (stack.length > 0) {
-				dev.warn("expected closing tag </" + stack[pos] + ">");
+				if (handler.filename) {
+					dev.warn(handler.filename + ": expected closing tag </" + stack[pos] + ">");
+				}
+				else {
+					dev.warn("expected closing tag </" + stack[pos] + ">");
+				}
 			}
 		} else if (pos < 0 || pos !== stack.length - 1) {
 			if (stack.length > 0) {
-				dev.warn("unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+				if (handler.filename) {
+					dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+				}
+				else {
+					dev.warn(lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+				}
 			} else {
-				dev.warn("unexpected closing tag " + tag);
+				if (handler.filename) {
+					dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag);
+				}
+				else {
+					dev.warn(lineNo + ": unexpected closing tag " + tag);
+				}
 			}
 		}
 		//!steal-remove-end
@@ -130,7 +173,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 			// Close all the open elements, up the stack
 			for (var i = stack.length - 1; i >= pos; i--) {
 				if (handler.close) {
-					handler.close(stack[i]);
+					handler.close(stack[i], lineNo);
 				}
 			}
 
@@ -141,25 +184,37 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 	function parseMustache(mustache, inside){
 		if(handler.special){
-			handler.special(inside);
+			handler.special(inside, lineNo);
 		}
 	}
+
 	var callChars = function(){
 		if(charsText) {
 			if(handler.chars) {
-				handler.chars(charsText);
+				handler.chars(charsText, lineNo);
 			}
+
+			//!steal-remove-start
+			lineNo += countLines(charsText);
+			//!steal-remove-end
 		}
+
 		charsText = "";
 	};
 
 	var index,
 		chars,
 		match,
+		lineNo,
 		stack = [],
 		last = html,
 		// an accumulating text for the next .chars callback
 		charsText = "";
+
+	//!steal-remove-start
+	lineNo = 1;
+	//!steal-remove-end
+
 	stack.last = function () {
 		return this[this.length - 1];
 	};
@@ -178,8 +233,13 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 				if (index >= 0) {
 					callChars();
 					if (handler.comment) {
-						handler.comment(html.substring(4, index));
+						handler.comment(html.substring(4, index), lineNo);
 					}
+
+					//!steal-remove-start
+					lineNo += countLines(html.substring(0, index + 3));
+					//!steal-remove-end
+
 					html = html.substring(index + 3);
 					chars = false;
 				}
@@ -190,8 +250,13 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 				if (match) {
 					callChars();
-					html = html.substring(match[0].length);
 					match[0].replace(endTag, parseEndTag);
+
+					//!steal-remove-start
+					lineNo += countLines(html.substring(0, match[0].length));
+					//!steal-remove-end
+
+					html = html.substring(match[0].length);
 					chars = false;
 				}
 
@@ -201,18 +266,25 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 				if(res) {
 					callChars();
-					html = res.html;
 					parseStartTag.apply(null, res.match);
+
+					html = res.html;
 					chars = false;
 				}
 
+				// magic tag
 			} else if (html.indexOf(magicStart) === 0 ) {
 				match = html.match(magicMatch);
 
 				if (match) {
 					callChars();
-					html = html.substring(match[0].length);
 					match[0].replace(magicMatch, parseMustache);
+
+					//!steal-remove-start
+					lineNo += countLines(html.substring(0, match[0].length));
+					//!steal-remove-end
+
+					html = html.substring(match[0].length);
 				}
 			}
 
@@ -230,15 +302,19 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 				if (text) {
 					charsText += text;
 				}
-
 			}
 
 		} else {
 			html = html.replace(new RegExp("([\\s\\S]*?)<\/" + stack.last() + "[^>]*>"), function (all, text) {
 				text = text.replace(/<!--([\s\S]*?)-->|<!\[CDATA\[([\s\S]*?)]]>/g, "$1$2");
 				if (handler.chars) {
-					handler.chars(text);
+					handler.chars(text, lineNo);
 				}
+
+				//!steal-remove-start
+				lineNo += countLines(text);
+				//!steal-remove-end
+
 				return "";
 			});
 
@@ -256,28 +332,29 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 	parseEndTag();
 
 
-	handler.done();
+	handler.done(lineNo);
 	return intermediate;
 };
 
-var callAttrStart = function(state, curIndex, handler, rest){
+var callAttrStart = function(state, curIndex, handler, rest, lineNo){
 	var attrName = rest.substring(typeof state.nameStart === "number" ? state.nameStart : curIndex, curIndex),
 		newAttrName = encoder.encode(attrName);
 
 	state.attrStart = newAttrName;
-	handler.attrStart(state.attrStart);
+	handler.attrStart(state.attrStart, lineNo);
 	state.inName = false;
 };
 
-var callAttrEnd = function(state, curIndex, handler, rest){
+var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 	if(state.valueStart !== undefined && state.valueStart < curIndex) {
-		handler.attrValue(rest.substring(state.valueStart, curIndex));
+		handler.attrValue(rest.substring(state.valueStart, curIndex), lineNo);
 	}
 	// if this never got to be inValue, like `DISABLED` then send a attrValue
-	else if(!state.inValue){
-		//handler.attrValue(state.attrStart);
-	}
-	handler.attrEnd(state.attrStart);
+	// else if(!state.inValue){
+	// 	handler.attrValue(state.attrStart, lineNo);
+	// }
+
+	handler.attrEnd(state.attrStart, lineNo);
 	state.attrStart = undefined;
 	state.valueStart = undefined;
 	state.inValue = false;
@@ -297,14 +374,14 @@ var findBreak = function(str, magicStart) {
 	return -1;
 };
 
-HTMLParser.parseAttrs = function(rest, handler){
+HTMLParser.parseAttrs = function(rest, handler, lineNo){
 	if(!rest) {
 		return;
 	}
 
 	var magicMatch = handler.magicMatch || defaultMagicMatch,
 		magicStart = handler.magicStart || defaultMagicStart;
-  
+
 	var i = 0;
 	var curIndex;
 	var state = {
@@ -326,12 +403,12 @@ HTMLParser.parseAttrs = function(rest, handler){
 
 		if(magicStart === rest.substr(curIndex, magicStart.length) ) {
 			if(state.inValue && curIndex > state.valueStart) {
-				handler.attrValue(rest.substring(state.valueStart, curIndex));
+				handler.attrValue(rest.substring(state.valueStart, curIndex), lineNo);
 			}
 			// `{{#foo}}DISABLED{{/foo}}`
 			else if(state.inName && state.nameStart < curIndex) {
-				callAttrStart(state, curIndex, handler, rest);
-				callAttrEnd(state, curIndex, handler, rest);
+				callAttrStart(state, curIndex, handler, rest, lineNo);
+				callAttrEnd(state, curIndex, handler, rest, lineNo);
 			}
 			// foo={{bar}}
 			else if(state.lookingForValue){
@@ -339,12 +416,13 @@ HTMLParser.parseAttrs = function(rest, handler){
 			}
 			// a {{bar}}
 			else if(state.lookingForEq && state.attrStart) {
-				callAttrEnd(state, curIndex, handler, rest);
+				callAttrEnd(state, curIndex, handler, rest, lineNo);
 			}
+
 			magicMatch.lastIndex = curIndex;
 			var match = magicMatch.exec(rest);
 			if(match) {
-				handler.special(match[1]);
+				handler.special(match[1], lineNo);
 				// i is already incremented
 				i = curIndex + (match[0].length);
 				if(state.inValue) {
@@ -355,25 +433,23 @@ HTMLParser.parseAttrs = function(rest, handler){
 		else if(state.inValue) {
 			if(state.inQuote) {
 				if(cur === state.inQuote) {
-					callAttrEnd(state, curIndex, handler, rest);
+					callAttrEnd(state, curIndex, handler, rest, lineNo);
 				}
 			}
 			else if(space.test(cur)) {
-				callAttrEnd(state, curIndex, handler, rest);
+				callAttrEnd(state, curIndex, handler, rest, lineNo);
 			}
 		}
 		// if we hit an = outside a value
 		else if(cur === "=" && (state.lookingForEq || state.lookingForName || state.inName)) {
-
 			// if we haven't yet started this attribute `{{}}=foo` case:
 			if(!state.attrStart) {
-				callAttrStart(state, curIndex, handler, rest);
+				callAttrStart(state, curIndex, handler, rest, lineNo);
 			}
 			state.lookingForValue = true;
 			state.lookingForEq = false;
 			state.lookingForName = false;
 		}
-		
 		// if we are currently in a name:
 		//  when the name starts with `{` or `(`
 		//  it isn't finished until the matching end character is found
@@ -385,18 +461,18 @@ HTMLParser.parseAttrs = function(rest, handler){
 				//handle mismatched brackets: `{(})` or `({)}`
 				otherStart = started === "{" ? "(" : "{";
 				otherOpposite = startOppositesMap[otherStart];
-				
+
 				if(rest[curIndex+1] === otherOpposite){
-					callAttrStart(state, curIndex+2, handler, rest);
+					callAttrStart(state, curIndex+2, handler, rest, lineNo);
 					i++;
 				}else{
-					callAttrStart(state, curIndex+1, handler, rest);
+					callAttrStart(state, curIndex+1, handler, rest, lineNo);
 				}
 
 				state.lookingForEq = true;
-			} 
+			}
 			else if(space.test(cur) && started !== "{" && started !== "(") {
-					callAttrStart(state, curIndex, handler, rest);
+					callAttrStart(state, curIndex, handler, rest, lineNo);
 					state.lookingForEq = true;
 			}
 		}
@@ -404,7 +480,7 @@ HTMLParser.parseAttrs = function(rest, handler){
 			if(!space.test(cur)) {
 				// might have just started a name, we need to close it
 				if(state.attrStart) {
-					callAttrEnd(state, curIndex, handler, rest);
+					callAttrEnd(state, curIndex, handler, rest, lineNo);
 				}
 				state.nameStart = curIndex;
 				state.inName = true;
@@ -423,16 +499,16 @@ HTMLParser.parseAttrs = function(rest, handler){
 				// if we are looking for a value
 				// at the end of the loop we need callAttrEnd
 			} else if (i === rest.length){
-				callAttrEnd(state, curIndex, handler, rest);
+				callAttrEnd(state, curIndex, handler, rest, lineNo);
 			}
 		}
 	}
 
 	if(state.inName) {
-		callAttrStart(state, curIndex+1, handler, rest);
-		callAttrEnd(state, curIndex+1, handler, rest);
+		callAttrStart(state, curIndex+1, handler, rest, lineNo);
+		callAttrEnd(state, curIndex+1, handler, rest, lineNo);
 	} else if(state.lookingForEq || state.lookingForValue || state.inValue) {
-		callAttrEnd(state, curIndex+1, handler, rest);
+		callAttrEnd(state, curIndex+1, handler, rest, lineNo);
 	}
 	magicMatch.lastIndex = 0;
 };
@@ -473,7 +549,7 @@ HTMLParser.searchStartTag = function (html) {
 
 	return {
 		match: match,
-		html: html.substring(startTag.length)
+		html: html.substring(startTag.length),
 	};
 
 
