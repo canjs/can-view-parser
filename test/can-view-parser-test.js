@@ -800,18 +800,18 @@ testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/c
 	};
 
 	makeWarnChecks('<my-input {value}="name" (value)="updateNameOnEven(%viewModel.value)/>', [
-		"End quote is missing for updateNameOnEven(%viewModel.value)"
+		"1: End quote is missing for updateNameOnEven(%viewModel.value)"
 	]);
 
 	makeWarnChecks('<input on:click="callback />', [
-		"End quote is missing for callback"
+		"1: End quote is missing for callback"
 	]);
 
 	makeWarnChecks('<my-input {an-attr}="aValue />', [
-		"End quote is missing for aValue"
+		"1: End quote is missing for aValue"
 	]);
 
 	makeWarnChecks("<my-input {an-other-attr}='anotherValue />", [
-		"End quote is missing for anotherValue"
+		"1: End quote is missing for anotherValue"
 	]);
 });

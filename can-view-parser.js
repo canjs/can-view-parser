@@ -352,7 +352,11 @@ var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 		var quotedVal = rest.substring(state.valueStart - 1, curIndex + 2);
 		quotedVal = quotedVal.trim();
 		if (state.inQuote !== quotedVal.charAt(quotedVal.length - 1)) {
-			dev.warn("End quote is missing for " + val);
+			if (handler.filename) {
+				dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);
+			} else {
+				dev.warn(lineNo + ": End quote is missing for " + val);
+			}
 		}
 		//!steal-remove-end
 		handler.attrValue(val, lineNo);
