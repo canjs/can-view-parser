@@ -2,6 +2,7 @@ var parser = require('can-view-parser');
 var QUnit = require('steal-qunit');
 var canDev = require('can-log/dev/dev');
 var encoder = require('can-attribute-encoder');
+var testHelpers = require('can-test-helpers');
 
 QUnit.module("can-view-parser");
 
@@ -778,4 +779,39 @@ test('camelCase properties are encoded with on:, :to, :from, :bind bindings', fu
 	];
 
 	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(tests));
+});
+
+testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', function () {
+	var makeWarnChecks = function(input, texts) {
+		var count = 0;
+		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(matched, text) {
+			equal(matched, texts[count++]);
+		});
+
+		parser(input, {
+			start: function(tagName, unary) {},
+			end: function(tagName, unary) {},
+			attrStart: function(attrName) {},
+			attrEnd: function(attrName) {},
+			attrValue: function(val) {},
+			done: function() {}
+		});
+		equal(count, teardown());
+	};
+
+	makeWarnChecks('<my-input {value}="name" (value)="updateNameOnEven(%viewModel.value)/>', [
+		"1: End quote is missing for updateNameOnEven(%viewModel.value)"
+	]);
+
+	makeWarnChecks('<input on:click="callback />', [
+		"1: End quote is missing for callback"
+	]);
+
+	makeWarnChecks('<my-input {an-attr}="aValue />', [
+		"1: End quote is missing for aValue"
+	]);
+
+	makeWarnChecks("<my-input {an-other-attr}='anotherValue />", [
+		"1: End quote is missing for anotherValue"
+	]);
 });

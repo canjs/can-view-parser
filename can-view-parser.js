@@ -347,7 +347,19 @@ var callAttrStart = function(state, curIndex, handler, rest, lineNo){
 
 var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 	if(state.valueStart !== undefined && state.valueStart < curIndex) {
-		handler.attrValue(rest.substring(state.valueStart, curIndex), lineNo);
+		var val = rest.substring(state.valueStart, curIndex);
+		//!steal-remove-start
+		var quotedVal = rest.substring(state.valueStart - 1, curIndex + 2);
+		quotedVal = quotedVal.trim();
+		if (state.inQuote !== quotedVal.charAt(quotedVal.length - 1)) {
+			if (handler.filename) {
+				dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);
+			} else {
+				dev.warn(lineNo + ": End quote is missing for " + val);
+			}
+		}
+		//!steal-remove-end
+		handler.attrValue(val, lineNo);
 	}
 	// if this never got to be inValue, like `DISABLED` then send a attrValue
 	// else if(!state.inValue){
