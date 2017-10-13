@@ -816,7 +816,7 @@ testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/c
 	]);
 });
 
-testHelpers.dev.devOnlyTest('Dont warn when a space is missing between an attr end quote and "{" or "(" (canjs/can-view-parser#7#issuecomment-336468766)', function () {
+testHelpers.dev.devOnlyTest('Fix false warning on missing closed quote (canjs/can-view-parser#7#issuecomment-336468766)', function () {
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
 		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(message, matched) {
