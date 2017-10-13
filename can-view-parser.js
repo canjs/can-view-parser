@@ -350,16 +350,10 @@ var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 		var val = rest.substring(state.valueStart, curIndex);
 		//!steal-remove-start
 		var quotedVal, closedQuote;
-		quotedVal = rest.substring(state.valueStart - 1, curIndex + 2);
+		quotedVal = rest.substring(state.valueStart - 1, curIndex + 1);
 		quotedVal = quotedVal.trim();
 		closedQuote = quotedVal.charAt(quotedVal.length - 1);
-
-		// handle if a space is missing between a closed quote
-		// and stache expression
-		if (closedQuote === "{" || closedQuote === "(") {
-			closedQuote = quotedVal.charAt(quotedVal.length - 2);
-		}
-
+		
 		if (state.inQuote !== closedQuote) {
 			if (handler.filename) {
 				dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);

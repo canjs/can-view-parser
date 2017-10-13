@@ -847,4 +847,8 @@ testHelpers.dev.devOnlyTest('Dont warn when a space is missing between an attr e
 		"1: End quote is missing for current-page"
 	]);
 
+	makeWarnChecks('<input type="text">', [
+		"1: End quote is missing for current-page"
+	]);
+
 });
