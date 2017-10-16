@@ -784,8 +784,8 @@ test('camelCase properties are encoded with on:, :to, :from, :bind bindings', fu
 testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', function () {
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
-		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(matched, text) {
-			equal(matched, texts[count++]);
+		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(message, matched) {
+			ok(matched, texts[count++]);
 		});
 
 		parser(input, {
@@ -814,4 +814,41 @@ testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/c
 	makeWarnChecks("<my-input {an-other-attr}='anotherValue />", [
 		"1: End quote is missing for anotherValue"
 	]);
+});
+
+testHelpers.dev.devOnlyTest('Fix false warning on missing closed quote (canjs/can-view-parser#7#issuecomment-336468766)', function () {
+	var makeWarnChecks = function(input, texts) {
+		var count = 0;
+		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(message, matched) {
+			notOk(matched, texts[count++]);
+		});
+
+		parser(input, {
+			start: function(tagName, unary) {},
+			end: function(tagName, unary) {},
+			attrStart: function(attrName) {},
+			attrEnd: function(attrName) {},
+			attrValue: function(val) {},
+			done: function() {},
+			special: function() {
+				return ['#if', '/if'];
+			},
+		});
+		equal(count, teardown());
+	};
+
+	var truthy = true;
+
+	makeWarnChecks('<div {{#if truthy}} class="current-page"{{/if}} />', [
+		"1: End quote is missing for current-page"
+	]);
+
+	makeWarnChecks('<div class="current-page"($click)="" />', [
+		"1: End quote is missing for current-page"
+	]);
+
+	makeWarnChecks('<input type="text">', [
+		"1: End quote is missing for current-page"
+	]);
+
 });

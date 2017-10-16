@@ -349,9 +349,12 @@ var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 	if(state.valueStart !== undefined && state.valueStart < curIndex) {
 		var val = rest.substring(state.valueStart, curIndex);
 		//!steal-remove-start
-		var quotedVal = rest.substring(state.valueStart - 1, curIndex + 2);
+		var quotedVal, closedQuote;
+		quotedVal = rest.substring(state.valueStart - 1, curIndex + 1);
 		quotedVal = quotedVal.trim();
-		if (state.inQuote !== quotedVal.charAt(quotedVal.length - 1)) {
+		closedQuote = quotedVal.charAt(quotedVal.length - 1);
+		
+		if (state.inQuote !== closedQuote) {
 			if (handler.filename) {
 				dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);
 			} else {
