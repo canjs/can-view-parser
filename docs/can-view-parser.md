@@ -1,5 +1,6 @@
 @module {function} can-view-parser
-@parent can-infrastructure
+@parent can-views
+@collection can-infrastructure
 @description Parse HTML and mustache tokens.
 @package ../package.json
 
