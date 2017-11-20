@@ -463,37 +463,6 @@ test('elements that have attributes with equal signs and no values are handled a
 	]));
 });
 
-
-test('supports other delimiters (#31)', function(){
-
-	var checks = makeChecks([
-		["start", ["h1", false]],
-		["attrStart", ["id"]],
-		["attrValue", ["foo"]],
-		["attrEnd", ["id"]],
-		["special", ["#if"]],
-		["special", ["."]],			//5
-		["special", ["/if"]],
-		["attrStart", ["class"]],
-		["attrValue", ["a"]],
-		["special", ["foo"]],
-		["attrEnd", ["class"]],		//10
-		["end", ["h1", false]],
-		["chars", ["Hello "]],
-		["special", ["message"]],
-		["chars", ["!"]],
-		["close",["h1"]],
-		["done",[]]
-	]);
-	checks.magicStart = "{";
-	checks.magicMatch = /\{([^\}]*)\}/g;
-
-
-	parser("<h1 id='foo' {#if}{.}{/if} class='a{foo}'>Hello {message}!</h1>",
-		checks);
-
-});
-
 test('{{}} in attribute values are handled correctly (#34)', function () {
 	var tests = [
 		["start", ["h1", false]],
@@ -851,38 +820,4 @@ testHelpers.dev.devOnlyTest('Fix false warning on missing closed quote (canjs/ca
 		"1: End quote is missing for current-page"
 	]);
 
-});
-
-testHelpers.dev.devOnlyTest('deprecation warning given when using magicMatch', function() {
-	var teardown = testHelpers.dev.willWarn("can-view-parser: magicMatch is deprecated.");
-
-	parser("<div />", {
-		start: function(tagName, unary) {},
-		end: function(tagName, unary) {},
-		attrStart: function(attrName) {},
-		attrEnd: function(attrName) {},
-		attrValue: function(val) {},
-		done: function() {},
-		special: function() {},
-		magicMatch: /\{([^\}]*)\}/g
-	});
-
-	QUnit.equal(teardown(), 1);
-});
-
-testHelpers.dev.devOnlyTest('deprecation warning given when using magicStart', function() {
-	var teardown = testHelpers.dev.willWarn("can-view-parser: magicStart is deprecated.");
-
-	parser("<div />", {
-		start: function(tagName, unary) {},
-		end: function(tagName, unary) {},
-		attrStart: function(attrName) {},
-		attrEnd: function(attrName) {},
-		attrValue: function(val) {},
-		done: function() {},
-		special: function() {},
-		magicStart: "{"
-	});
-
-	QUnit.equal(teardown(), 1);
 });
