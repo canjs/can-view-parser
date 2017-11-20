@@ -1,5 +1,6 @@
 @property {RegExp} can-view-parser.ParseHandler.magicMatch magicMatch
 @parent can-view-parser.ParseHandler
+@deprecated {4.0}
 
 @option {RegExp}
 
