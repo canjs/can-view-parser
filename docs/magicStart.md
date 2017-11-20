@@ -1,5 +1,6 @@
 @property {String} can-view-parser.ParseHandler.magicStart magicStart
 @parent can-view-parser.ParseHandler
+@deprecated {4.0}
 
 @option {String}
 

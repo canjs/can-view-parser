@@ -103,6 +103,10 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		dev.warn("can-view-parser: magicMatch is deprecated.");
 	}
 
+	if (handler.magicStart) {
+		dev.warn("can-view-parser: magicStart is deprecated.");
+	}
+
 	function parseStartTag(tag, tagName, rest, unary) {
 		tagName = caseMattersElements[tagName] ? tagName : tagName.toLowerCase();
 

@@ -869,3 +869,20 @@ testHelpers.dev.devOnlyTest('deprecation warning given when using magicMatch', f
 
 	QUnit.equal(teardown(), 1);
 });
+
+testHelpers.dev.devOnlyTest('deprecation warning given when using magicStart', function() {
+	var teardown = testHelpers.dev.willWarn("can-view-parser: magicStart is deprecated.");
+
+	parser("<div />", {
+		start: function(tagName, unary) {},
+		end: function(tagName, unary) {},
+		attrStart: function(attrName) {},
+		attrEnd: function(attrName) {},
+		attrValue: function(val) {},
+		done: function() {},
+		special: function() {},
+		magicStart: "{"
+	});
+
+	QUnit.equal(teardown(), 1);
+});
