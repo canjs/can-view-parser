@@ -509,6 +509,52 @@ test('{{}} in attribute values are handled correctly (#34)', function () {
 	parser("<h1 class='{{foo}}a'></h1>", makeChecks(tests));
 });
 
+test('> in attribute values are handled correctly', function() {
+	parser('<h1 data-content="<b>foo</b>">bar</h1>', makeChecks([
+		["start", ["h1", false]],
+		["attrStart", ["data-content"]],
+		["attrValue", ["<b>foo</b>"]],
+		["attrEnd", ["data-content"]],		//10
+		["end", ["h1", false]],
+		["chars", ["bar"]],
+		["close",["h1"]],
+		["done",[]]
+	]));
+
+	parser('<h1 data-nothing="" data-something="something" data-content="<b>foo</b>" data-something-after="something-after">bar</h1>', makeChecks([
+		["start", ["h1", false]],
+		["attrStart", ["data-nothing"]],
+		["attrEnd", ["data-nothing"]],		//10
+		["attrStart", ["data-something"]],
+		["attrValue", ["something"]],
+		["attrEnd", ["data-something"]],		//10
+		["attrStart", ["data-content"]],
+		["attrValue", ["<b>foo</b>"]],
+		["attrEnd", ["data-content"]],		//10
+		["attrStart", ["data-something-after"]],
+		["attrValue", ["something-after"]],
+		["attrEnd", ["data-something-after"]],		//10
+		["end", ["h1", false]],
+		["chars", ["bar"]],
+		["close",["h1"]],
+		["done",[]]
+	]));
+
+	parser('<h1 data-first="<b>foo</b>" \n data-second="><>>>>><foo>>>/>> \n />"  \n >\nbar</h1>', makeChecks([
+		["start", ["h1", false]],
+		["attrStart", ["data-first"]],
+		["attrValue", ["<b>foo</b>"]],
+		["attrEnd", ["data-first"]],		//10
+		["attrStart", ["data-second"]],
+		["attrValue", ["><>>>>><foo>>>/>> \n />"]],
+		["attrEnd", ["data-second"]],		//10
+		["end", ["h1", false]],
+		["chars", ["\nbar"]],
+		["close",["h1"]],
+		["done",[]]
+	]));
+});
+
 //!steal-remove-start
 test('counts lines properly', function() {
 	parser(`
