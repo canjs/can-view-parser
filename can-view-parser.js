@@ -38,7 +38,8 @@ var alphaNumeric = "A-Za-z0-9",
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
 	magicMatch = new RegExp("\\{\\{(![\\s\\S]*?!|[\\s\\S]*?)\\}\\}\\}?","g"),
 	space = /\s/,
-	alphaRegex = new RegExp('['+ alphaNumeric + ']');
+	alphaRegex = new RegExp('['+ alphaNumeric + ']'),
+	attributeRegexp = new RegExp("["+alphaNumericHU+"]+\s*=\s*(\"[^\"]*\"|'[^']*')");
 
 // Empty Elements - HTML 5
 var empty = makeMap("area,base,basefont,br,col,frame,hr,img,input,isindex,link,meta,param,embed");
@@ -524,6 +525,26 @@ HTMLParser.parseAttrs = function(rest, handler, lineNo){
 
 HTMLParser.searchStartTag = function (html) {
 	var closingIndex = html.indexOf('>');
+
+	// The first closing bracket we find might be in an attribute value.
+	// Move through the attributes by regexp.
+	var attributeRange = attributeRegexp.exec(html.substring(1));
+	var afterAttributeOffset = 1;
+	// if the closing index is after the next attribute...
+	while(attributeRange && closingIndex >= afterAttributeOffset + attributeRange.index) {
+
+		// prepare to move to the attribute after this one by increasing the offset
+		afterAttributeOffset += attributeRange.index + attributeRange[0].length;
+		// if the closing index is before the new offset, then this closing index is inside
+		//  an attribute value and should be ignored.  Find the *next* closing character.
+		while(closingIndex < afterAttributeOffset) {
+			closingIndex += html.substring(closingIndex + 1).indexOf('>') + 1;
+		}
+
+		// find the next attribute by starting from the new offset.
+		attributeRange = attributeRegexp.exec(html.substring(afterAttributeOffset));
+	}
+
 	// if there is no closing bracket
 	// <input class=
 	// or if the tagName does not start with alphaNumer character
