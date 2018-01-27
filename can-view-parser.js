@@ -34,9 +34,9 @@ function countLines(input) {
 
 var alphaNumeric = "A-Za-z0-9",
 	alphaNumericHU = "-:_"+alphaNumeric,
-	defaultMagicStart = "{{",
+	magicStart = "{{",
 	endTag = new RegExp("^<\\/(["+alphaNumericHU+"]+)[^>]*>"),
-	defaultMagicMatch = new RegExp("\\{\\{(![\\s\\S]*?!|[\\s\\S]*?)\\}\\}\\}?","g"),
+	magicMatch = new RegExp("\\{\\{(![\\s\\S]*?!|[\\s\\S]*?)\\}\\}\\}?","g"),
 	space = /\s/,
 	alphaRegex = new RegExp('['+ alphaNumeric + ']'),
 	attributeRegexp = new RegExp("["+alphaNumericHU+"]+\s*=\s*(\"[^\"]*\"|'[^']*')");
@@ -95,17 +95,6 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 				}
 			};
 		});
-	}
-
-	var magicMatch = handler.magicMatch || defaultMagicMatch,
-		magicStart = handler.magicStart || defaultMagicStart;
-
-	if (handler.magicMatch) {
-		dev.warn("can-view-parser: magicMatch is deprecated.");
-	}
-
-	if (handler.magicStart) {
-		dev.warn("can-view-parser: magicStart is deprecated.");
 	}
 
 	function parseStartTag(tag, tagName, rest, unary) {
@@ -402,9 +391,6 @@ HTMLParser.parseAttrs = function(rest, handler, lineNo){
 	if(!rest) {
 		return;
 	}
-
-	var magicMatch = handler.magicMatch || defaultMagicMatch,
-		magicStart = handler.magicStart || defaultMagicStart;
 
 	var i = 0;
 	var curIndex;

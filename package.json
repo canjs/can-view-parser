@@ -1,6 +1,6 @@
 {
   "name": "can-view-parser",
-  "version": "3.8.2",
+  "version": "4.0.0-pre.0",
   "description": "Parses html and magic tags",
   "homepage": "http://canjs.com",
   "repository": {
@@ -13,9 +13,8 @@
     "url": "http://bitovi.com"
   },
   "scripts": {
-    "preversion": "npm test && npm run build",
-    "version": "git commit -am \"Update dist for release\" && git checkout -b release && git add -f dist/",
-    "postversion": "git push --tags && git checkout master && git branch -D release && git push",
+    "preversion": "npm test",
+    "postpublish": "git push --tags && git push",
     "testee": "testee test/test.html --browsers firefox",
     "test": "npm run detect-cycle && npm run jshint && npm run testee",
     "jshint": "jshint ./*.js --config",
@@ -23,7 +22,6 @@
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
-    "build": "node build.js",
     "develop": "done-serve --static --develop --port 8080",
     "detect-cycle": "detect-cyclic-packages --ignore done-serve"
   },
@@ -34,20 +32,15 @@
     "donejs"
   ],
   "devDependencies": {
-    "bit-docs": "0.0.7",
     "can-test-helpers": "^1.0.1",
     "detect-cyclic-packages": "^1.1.0",
-    "done-serve": "^1.2.0",
-    "donejs-cli": "^1.0.1",
-    "generator-donejs": "^1.0.5",
     "jshint": "^2.9.1",
     "steal": "^1.0.1",
     "steal-qunit": "^1.0.0",
-    "steal-tools": "^1.0.0",
     "testee": "^0.7.0"
   },
   "dependencies": {
-    "can-attribute-encoder": "^0.3.4",
+    "can-attribute-encoder": "^1.0.0",
     "can-log": "^1.0.0",
     "can-namespace": "1.0.0"
   }
