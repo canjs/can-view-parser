@@ -6,10 +6,10 @@
 
 The starting characters of a magic tag.
 
-```javascript
+```js
 parser(" /* ... */ content /* ... */", {
-  // ...
-  magicStart: "{",
-  magicMatch:  /\{([^\}]*)\}/g
+	// ...
+	magicStart: "{",
+	magicMatch:  /\{([^\}]*)\}/g
 });
 ```

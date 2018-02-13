@@ -8,10 +8,10 @@ A regular expression that matches from the start of the magic tag to the end of 
 magic tag.  It should also have the first capture group match the content within the
 magic tag.  
 
-```javascript
+```js
 parser(" /* ... */ content /* ... */", {
-  // ...
-  magicStart: "{",
-  magicMatch:  /\{([^\}]*)\}/g
+	// ...
+	magicStart: "{",
+	magicMatch:  /\{([^\}]*)\}/g
 });
 ```

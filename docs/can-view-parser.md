@@ -8,7 +8,7 @@
 
 Parse an html string:
 
-```javascript
+```js
 import parser from "can-view-parser";
 
 const html = '<h1><span bob="phillips"></span><span bob="meyers"></span>' +
@@ -18,17 +18,17 @@ const bobs = {};
 let curAttr;
 
 parser(html, {
-  attrStart: function(attrName){
-    curAttr = attrName;
-  },
-  attrValue: function(value){
-    bobs[curAttr] = value;
-  }
+	attrStart: function(attrName){
+		curAttr = attrName;
+	},
+	attrValue: function(value){
+		bobs[curAttr] = value;
+	}
 });
 
 for(const first in bobs) {
-  const last = bobs[first];
-  console.log("Hello", first, last);
+	const last = bobs[first];
+	console.log("Hello", first, last);
 }
 ```
 
