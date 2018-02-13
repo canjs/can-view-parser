@@ -4,7 +4,7 @@
 
 With StealJS, you can import this module directly in a template that is autorendered:
 
-```js
+```javascript
 import plugin from 'can-view-parser';
 ```
 
@@ -13,8 +13,8 @@ import plugin from 'can-view-parser';
 Use `require` to load `can-view-parser` and everything else
 needed to create a template that uses `can-view-parser`:
 
-```js
-var plugin = require("can-view-parser");
+```javascript
+import plugin from "can-view-parser";
 ```
 
 ## AMD use
