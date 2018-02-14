@@ -5,7 +5,7 @@
 With StealJS, you can import this module directly in a template that is autorendered:
 
 ```js
-import plugin from 'can-view-parser';
+import plugin from "can-view-parser";
 ```
 
 ### CommonJS use
