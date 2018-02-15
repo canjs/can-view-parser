@@ -9,9 +9,10 @@ magic tag.  It should also have the first capture group match the content within
 magic tag.  
 
 ```js
-parser(" ... content ....", {
-	...
+parser( " /* ... */ content /* ... */", {
+
+	// ...
 	magicStart: "{",
-	magicMatch:  /\{([^\}]*)\}/g
-});
+	magicMatch: /\{([^\}]*)\}/g
+} );
 ```

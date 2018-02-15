@@ -9,26 +9,26 @@
 Parse an html string:
 
 ```js
-var parser = require("can-view-parser");
+import parser from "can-view-parser";
 
-var html = '<h1><span bob="phillips"></span><span bob="meyers"></span>' +
-	'</h1>';
+const html = "<h1><span bob=\"phillips\"></span><span bob=\"meyers\"></span>" +
+  "</h1>";
 
-var bobs = {};
-var curAttr;
+const bobs = {};
+let curAttr;
 
-parser(html, {
-	attrStart: function(attrName){
+parser( html, {
+	attrStart: function( attrName ) {
 		curAttr = attrName;
 	},
-	attrValue: function(value){
-		bobs[curAttr] = value;
+	attrValue: function( value ) {
+		bobs[ curAttr ] = value;
 	}
-});
+} );
 
-for(var first in bobs) {
-	var last = bobs[first];
-	console.log("Hello", first, last);
+for ( const first in bobs ) {
+	const last = bobs[ first ];
+	console.log( "Hello", first, last );
 }
 ```
 

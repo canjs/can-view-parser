@@ -7,9 +7,10 @@
 The starting characters of a magic tag.
 
 ```js
-parser(" ... content ....", {
-	...
+parser( " /* ... */ content /* ... */", {
+
+	// ...
 	magicStart: "{",
-	magicMatch:  /\{([^\}]*)\}/g
-});
+	magicMatch: /\{([^\}]*)\}/g
+} );
 ```
