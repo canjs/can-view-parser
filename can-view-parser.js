@@ -26,9 +26,13 @@ function handleIntermediate(intermediate, handler){
 }
 
 //!steal-remove-start
-function countLines(input) {
-	// TODO: optimize?
-	return input.split('\n').length - 1;
+if (process.env.NODE_ENV !== 'production') {
+	//assign the function to a var to avoid jshint
+	//"Function declarations should not be placed in blocks"
+	var countLines = function countLines(input) {
+		// TODO: optimize?
+		return input.split('\n').length - 1;
+	};
 }
 //!steal-remove-end
 
@@ -84,8 +88,10 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 					}
 
 					//!steal-remove-start
-					// but restore line number in dev mode
-					end = arguments.length;
+					if (process.env.NODE_ENV !== 'production') {
+						// but restore line number in dev mode
+						end = arguments.length;
+					}
 					//!steal-remove-end
 
 					intermediate.push({
@@ -114,7 +120,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		HTMLParser.parseAttrs(rest, handler, lineNo);
 
 		//!steal-remove-start
-		lineNo += countLines(tag);
+		if (process.env.NODE_ENV !== 'production') {
+			lineNo += countLines(tag);
+		}
 		//!steal-remove-end
 
 
@@ -139,29 +147,31 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		}
 
 		//!steal-remove-start
-		if (typeof tag === 'undefined') {
-			if (stack.length > 0) {
-				if (handler.filename) {
-					dev.warn(handler.filename + ": expected closing tag </" + stack[pos] + ">");
+		if (process.env.NODE_ENV !== 'production') {
+			if (typeof tag === 'undefined') {
+				if (stack.length > 0) {
+					if (handler.filename) {
+						dev.warn(handler.filename + ": expected closing tag </" + stack[pos] + ">");
+					}
+					else {
+						dev.warn("expected closing tag </" + stack[pos] + ">");
+					}
 				}
-				else {
-					dev.warn("expected closing tag </" + stack[pos] + ">");
-				}
-			}
-		} else if (pos < 0 || pos !== stack.length - 1) {
-			if (stack.length > 0) {
-				if (handler.filename) {
-					dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
-				}
-				else {
-					dev.warn(lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
-				}
-			} else {
-				if (handler.filename) {
-					dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag);
-				}
-				else {
-					dev.warn(lineNo + ": unexpected closing tag " + tag);
+			} else if (pos < 0 || pos !== stack.length - 1) {
+				if (stack.length > 0) {
+					if (handler.filename) {
+						dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+					}
+					else {
+						dev.warn(lineNo + ": unexpected closing tag " + tag + " expected </" + stack[stack.length - 1] + ">");
+					}
+				} else {
+					if (handler.filename) {
+						dev.warn(handler.filename + ":" + lineNo + ": unexpected closing tag " + tag);
+					}
+					else {
+						dev.warn(lineNo + ": unexpected closing tag " + tag);
+					}
 				}
 			}
 		}
@@ -193,7 +203,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 			}
 
 			//!steal-remove-start
-			lineNo += countLines(charsText);
+			if (process.env.NODE_ENV !== 'production') {
+				lineNo += countLines(charsText);
+			}
 			//!steal-remove-end
 		}
 
@@ -210,7 +222,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 		charsText = "";
 
 	//!steal-remove-start
-	lineNo = 1;
+	if (process.env.NODE_ENV !== 'production') {
+		lineNo = 1;
+	}
 	//!steal-remove-end
 
 	stack.last = function () {
@@ -235,7 +249,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 					}
 
 					//!steal-remove-start
-					lineNo += countLines(html.substring(0, index + 3));
+					if (process.env.NODE_ENV !== 'production') {
+						lineNo += countLines(html.substring(0, index + 3));
+					}
 					//!steal-remove-end
 
 					html = html.substring(index + 3);
@@ -251,7 +267,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 					match[0].replace(endTag, parseEndTag);
 
 					//!steal-remove-start
-					lineNo += countLines(html.substring(0, match[0].length));
+					if (process.env.NODE_ENV !== 'production') {
+						lineNo += countLines(html.substring(0, match[0].length));
+					}
 					//!steal-remove-end
 
 					html = html.substring(match[0].length);
@@ -279,7 +297,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 					match[0].replace(magicMatch, parseMustache);
 
 					//!steal-remove-start
-					lineNo += countLines(html.substring(0, match[0].length));
+					if (process.env.NODE_ENV !== 'production') {
+						lineNo += countLines(html.substring(0, match[0].length));
+					}
 					//!steal-remove-end
 
 					html = html.substring(match[0].length);
@@ -310,7 +330,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 				}
 
 				//!steal-remove-start
-				lineNo += countLines(text);
+				if (process.env.NODE_ENV !== 'production') {
+					lineNo += countLines(text);
+				}
 				//!steal-remove-end
 
 				return "";
@@ -347,16 +369,18 @@ var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 	if(state.valueStart !== undefined && state.valueStart < curIndex) {
 		var val = rest.substring(state.valueStart, curIndex);
 		//!steal-remove-start
-		var quotedVal, closedQuote;
-		quotedVal = rest.substring(state.valueStart - 1, curIndex + 1);
-		quotedVal = quotedVal.trim();
-		closedQuote = quotedVal.charAt(quotedVal.length - 1);
-		
-		if (state.inQuote !== closedQuote) {
-			if (handler.filename) {
-				dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);
-			} else {
-				dev.warn(lineNo + ": End quote is missing for " + val);
+		if (process.env.NODE_ENV !== 'production') {
+			var quotedVal, closedQuote;
+			quotedVal = rest.substring(state.valueStart - 1, curIndex + 1);
+			quotedVal = quotedVal.trim();
+			closedQuote = quotedVal.charAt(quotedVal.length - 1);
+			
+			if (state.inQuote !== closedQuote) {
+				if (handler.filename) {
+					dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);
+				} else {
+					dev.warn(lineNo + ": End quote is missing for " + val);
+				}
 			}
 		}
 		//!steal-remove-end
