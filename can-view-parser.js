@@ -1,3 +1,4 @@
+"use strict";
 /* jshint maxdepth:7,node:true, latedef:false */
 var namespace = require('can-namespace'),
 	dev = require('can-log/dev/dev'),
