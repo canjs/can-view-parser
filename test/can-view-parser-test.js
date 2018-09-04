@@ -526,80 +526,80 @@ test('> in attribute values are handled correctly', function() {
 
 //!steal-remove-start
 test('counts lines properly', function() {
-	parser(`
-	<style>
-		.header {
-			color: black;
-		}
-	</style>
-
-	<h1
-		class="header"
-	>
-		Header
-	</h1>
-	<article>
-		Body Line {{line1}}<br />
-		Body Line {{line2}}
-		{{#if}}
-			{{.}}
-		{{/if}}
-	</article>
-`, makeChecks([
-		[ "chars", [ `
-	`, 1 ] ],
+	parser("\
+	<style>\
+		.header {\
+			color: black;\
+		}\
+	</style>\
+\
+	<h1\
+		class=\"header\"\
+	>\
+		Header\
+	</h1>\
+	<article>\
+		Body Line {{line1}}<br />\
+		Body Line {{line2}}\
+		{{#if}}\
+			{{.}}\
+		{{/if}}\
+	</article>\
+", makeChecks([
+		[ "chars", [ "\
+	", 1 ] ],
 
 		[ "start", [ "style", false, 2 ] ],
 		[ "end", [ "style", false, 2 ] ],
-		[ "chars", [ `
-		.header {
-			color: black;
-		}
-	`, 2 ] ],
+		[ "chars", [ "\
+		.header {\
+			color: black;\
+		}\
+	", 2 ] ],
 		[ "close", [ "style", 6 ] ],
-		[ "chars", [ `
-
-	`, 6 ] ],
+		[ "chars", [ "\
+\
+	", 6 ] ],
 
 		[ "start", [ "h1", false, 8 ] ],
 		[ "attrStart", [ "class", 8 ] ],
 		[ "attrValue", [ "header", 8 ] ],
 		[ "attrEnd", [ "class", 8 ] ],
 		[ "end", [ "h1", false, 10 ] ],
-		[ "chars", [ `
-		Header
-	`, 10 ] ],
+		[ "chars", [ "\
+		Header\
+	", 10 ] ],
 		[ "close", [ "h1", 12 ] ],
 
-		[ "chars", [ `
-	`, 12 ] ],
+		[ "chars", [ "\
+	", 12 ] ],
 
 		[ "start", [ "article", false, 13 ] ],
 		[ "end", [ "article", false, 13 ] ],
 
-		[ "chars", [ `
-		Body Line `, 13 ] ],
+		[ "chars", [ "\
+		Body Line ", 13 ] ],
 		[ "special", [ "line1", 14 ] ],
 		[ "start", [ "br", true, 14 ] ],
 		[ "end", [ "br", true, 14 ] ],
-		[ "chars", [ `
-		Body Line `, 14 ] ],
+		[ "chars", [ "\
+		Body Line ", 14 ] ],
 		[ "special", [ "line2", 15 ] ],
-		[ "chars", [ `
-		`, 15 ] ],
+		[ "chars", [ "\
+		", 15 ] ],
 		[ "special", [ "#if", 16 ] ],
-		[ "chars", [ `
-			`, 16 ] ],
+		[ "chars", [ "\
+			", 16 ] ],
 		[ "special", [ ".", 17 ] ],
-		[ "chars", [ `
-		`, 17 ] ],
+		[ "chars", [ "\
+		", 17 ] ],
 		[ "special", [ "/if", 18 ] ],
-		[ "chars", [ `
-	`, 18 ] ],
+		[ "chars", [ "\
+	", 18 ] ],
 
 		[ "close", [ "article", 19 ] ],
-		[ "chars", [ `
-`, 19 ] ],
+		[ "chars", [ "\
+", 19 ] ],
 
 		[ "done", [ 20 ] ],
 	]));
