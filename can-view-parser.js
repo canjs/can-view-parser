@@ -1,4 +1,14 @@
 "use strict";
+var grammar = require("./grammar");
+var parse = require("can-parse");
+
+var parser = parse(grammar);
+
+module.exports = function(html, handler){
+	parser(html, function(token, changes){
+		console.log(token, changes);
+	});
+};
 /* jshint maxdepth:7,node:true, latedef:false */
 var namespace = require('can-namespace'),
 	dev = require('can-log/dev/dev'),
@@ -375,7 +385,7 @@ var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 			quotedVal = rest.substring(state.valueStart - 1, curIndex + 1);
 			quotedVal = quotedVal.trim();
 			closedQuote = quotedVal.charAt(quotedVal.length - 1);
-			
+
 			if (state.inQuote !== closedQuote) {
 				if (handler.filename) {
 					dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);
@@ -610,4 +620,4 @@ HTMLParser.searchStartTag = function (html) {
 
 };
 
-module.exports = namespace.HTMLParser = HTMLParser;
+//module.exports = namespace.HTMLParser = HTMLParser;

@@ -42,6 +42,7 @@
   "dependencies": {
     "can-attribute-encoder": "^1.0.0",
     "can-log": "^1.0.0",
-    "can-namespace": "1.0.0"
+    "can-namespace": "1.0.0",
+    "can-parse": "file:../can-parse"
   }
 }
