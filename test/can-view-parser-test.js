@@ -867,3 +867,36 @@ testHelpers.dev.devOnlyTest('Fix false warning on missing closed quote (canjs/ca
 	]);
 
 });
+
+test('TextNodes are not inserted before the <head> or after the </body>', function () {
+	var tests = [
+		["start", ["html", false]],
+		["end", ["html", false]],
+		//["chars", ["\n\t"]], // TODO REMOVE THIS
+		["start", ["head", false]],
+		["end", ["head", false]],
+		["chars", ["\n\t\t"]],
+		["start", ["title", false]],
+		["end", ["title", false]],
+		["chars", ["Test"]],
+		["close", ["title"]],
+		["chars", ["\n\t\t"]],
+		["close", ["head"]],
+		["chars", ["\n\t"]],
+		["start", ["body", false]],
+		["end", ["body", false]],
+		["chars", ["\n\t\t"]],
+		["start", ["h1", false]],
+		["end", ["h1", false]],
+		["chars", ["Test"]],
+		["close", ["h1"]],
+		["chars", ["\n\t"]],
+		["close", ["body"]],
+		//["chars", ["\n"]], // TODO REMOVE THIS
+		["close", ["html"]],
+		["done", []]
+	];
+
+	var html = "<html>\n\t<head>\n\t\t<title>Test</title>\n\t\t</head>\n\t<body>\n\t\t<h1>Test</h1>\n\t</body>\n</html>"
+	parser(html, makeChecks(tests));
+});
