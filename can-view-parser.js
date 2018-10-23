@@ -129,6 +129,9 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 		handler.end(tagName, unary, lineNo);
 
+		if(tagName === "html") {
+			skipChars = true;
+		}
 	}
 
 	function parseEndTag(tag, tagName) {
@@ -188,6 +191,11 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 
 			// Remove the open elements from the stack
 			stack.length = pos;
+
+			// Don't add TextNodes after the <body> tag
+			if(tagName === "body") {
+				skipChars = true;
+			}
 		}
 	}
 
@@ -198,7 +206,7 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 	}
 
 	var callChars = function(){
-		if(charsText) {
+		if(charsText && !skipChars) {
 			if(handler.chars) {
 				handler.chars(charsText, lineNo);
 			}
@@ -210,11 +218,13 @@ var HTMLParser = function (html, handler, returnIntermediate) {
 			//!steal-remove-end
 		}
 
+		skipChars = false;
 		charsText = "";
 	};
 
 	var index,
 		chars,
+		skipChars,
 		match,
 		lineNo,
 		stack = [],
@@ -375,7 +385,7 @@ var callAttrEnd = function(state, curIndex, handler, rest, lineNo){
 			quotedVal = rest.substring(state.valueStart - 1, curIndex + 1);
 			quotedVal = quotedVal.trim();
 			closedQuote = quotedVal.charAt(quotedVal.length - 1);
-			
+
 			if (state.inQuote !== closedQuote) {
 				if (handler.filename) {
 					dev.warn(handler.filename + ":" + lineNo + ": End quote is missing for " + val);
