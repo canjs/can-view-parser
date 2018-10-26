@@ -526,80 +526,66 @@ test('> in attribute values are handled correctly', function() {
 
 //!steal-remove-start
 test('counts lines properly', function() {
-	parser(`
-	<style>
-		.header {
-			color: black;
-		}
-	</style>
-
-	<h1
-		class="header"
-	>
-		Header
-	</h1>
-	<article>
-		Body Line {{line1}}<br />
-		Body Line {{line2}}
-		{{#if}}
-			{{.}}
-		{{/if}}
-	</article>
-`, makeChecks([
-		[ "chars", [ `
-	`, 1 ] ],
+	parser(" \n"+
+	"<style>\r\n"+
+		"\t.header {\r\n"+
+		"\t\tcolor: black;\r\n"+
+		"\t}\r\n"+
+	"</style>\r\n"+
+	"\n"+
+	"<h1\r\n"+
+		"\tclass='header'\r\n"+
+	">\r\n"+
+		"\tHeader\r\n"+
+	"</h1>\r\n"+
+	"<article>\r\n"+
+		"\tBody Line {{line1}}<br />\r\n"+
+		"\tBody Line {{line2}}\r\n"+
+		"\t{{#if}}\r\n"+
+			"\t\t{{.}}\r\n"+
+		"\t{{/if}}\r\n"+
+	"</article>\r\n",
+	makeChecks([
+		[ "chars", [ " \n", 1 ] ],
 
 		[ "start", [ "style", false, 2 ] ],
 		[ "end", [ "style", false, 2 ] ],
-		[ "chars", [ `
-		.header {
-			color: black;
-		}
-	`, 2 ] ],
+		[ "chars", [ 
+			"\r\n\t.header {\r\n"+
+			"\t\tcolor: black;\r\n"+
+			"\t}\r\n", 2 ] ],
 		[ "close", [ "style", 6 ] ],
-		[ "chars", [ `
-
-	`, 6 ] ],
+		[ "chars", [ "\r\n\n", 6 ] ],
 
 		[ "start", [ "h1", false, 8 ] ],
 		[ "attrStart", [ "class", 8 ] ],
 		[ "attrValue", [ "header", 8 ] ],
 		[ "attrEnd", [ "class", 8 ] ],
 		[ "end", [ "h1", false, 10 ] ],
-		[ "chars", [ `
-		Header
-	`, 10 ] ],
+		[ "chars", [ "\r\n\tHeader\r\n", 10 ] ],
 		[ "close", [ "h1", 12 ] ],
 
-		[ "chars", [ `
-	`, 12 ] ],
+		[ "chars", [ "\r\n", 12 ] ],
 
 		[ "start", [ "article", false, 13 ] ],
 		[ "end", [ "article", false, 13 ] ],
 
-		[ "chars", [ `
-		Body Line `, 13 ] ],
+		[ "chars", [ "\r\n\tBody Line ", 13 ] ],
 		[ "special", [ "line1", 14 ] ],
 		[ "start", [ "br", true, 14 ] ],
 		[ "end", [ "br", true, 14 ] ],
-		[ "chars", [ `
-		Body Line `, 14 ] ],
+		[ "chars", [ "\r\n\tBody Line ", 14 ] ],
 		[ "special", [ "line2", 15 ] ],
-		[ "chars", [ `
-		`, 15 ] ],
+		[ "chars", [ "\r\n\t", 15 ] ],
 		[ "special", [ "#if", 16 ] ],
-		[ "chars", [ `
-			`, 16 ] ],
+		[ "chars", [ "\r\n\t\t", 16 ] ],
 		[ "special", [ ".", 17 ] ],
-		[ "chars", [ `
-		`, 17 ] ],
+		[ "chars", [ "\r\n\t", 17 ] ],
 		[ "special", [ "/if", 18 ] ],
-		[ "chars", [ `
-	`, 18 ] ],
+		[ "chars", [ "\r\n", 18 ] ],
 
 		[ "close", [ "article", 19 ] ],
-		[ "chars", [ `
-`, 19 ] ],
+		[ "chars", [ "\r\n", 19 ] ],
 
 		[ "done", [ 20 ] ],
 	]));
@@ -835,7 +821,7 @@ testHelpers.dev.devOnlyTest('Fix false warning on missing closed quote (canjs/ca
 	var makeWarnChecks = function(input, texts) {
 		var count = 0;
 		var teardown = testHelpers.dev.willWarn(/End quote is missing for/, function(message, matched) {
-			notOk(matched, texts[count++]);
+			QUnit.notOk(matched, texts[count++]);
 		});
 
 		parser(input, {
@@ -851,8 +837,6 @@ testHelpers.dev.devOnlyTest('Fix false warning on missing closed quote (canjs/ca
 		});
 		equal(count, teardown());
 	};
-
-	var truthy = true;
 
 	makeWarnChecks('<div {{#if truthy}} class="current-page"{{/if}} />', [
 		"1: End quote is missing for current-page"
@@ -897,6 +881,6 @@ test('TextNodes are not inserted before the <head> or after the </body>', functi
 		["done", []]
 	];
 
-	var html = "<html>\n\t<head>\n\t\t<title>Test</title>\n\t\t</head>\n\t<body>\n\t\t<h1>Test</h1>\n\t</body>\n</html>"
+	var html = "<html>\n\t<head>\n\t\t<title>Test</title>\n\t\t</head>\n\t<body>\n\t\t<h1>Test</h1>\n\t</body>\n</html>";
 	parser(html, makeChecks(tests));
 });
