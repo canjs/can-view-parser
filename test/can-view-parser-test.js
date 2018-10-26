@@ -838,10 +838,6 @@ testHelpers.dev.devOnlyTest('Fix false warning on missing closed quote (canjs/ca
 		equal(count, teardown());
 	};
 
-	/* jshint ignore:start */
-	var truthy = true;
-	/* jshint ignore:end */
-
 	makeWarnChecks('<div {{#if truthy}} class="current-page"{{/if}} />', [
 		"1: End quote is missing for current-page"
 	]);
