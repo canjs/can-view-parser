@@ -6,7 +6,7 @@ var testHelpers = require('can-test-helpers');
 
 QUnit.module("can-view-parser");
 
-var makeChecks = function(tests){
+var makeChecks = function(assert, tests){
 	var count = 0;
 	var makeCheck = function(name){
 		return function(){
@@ -66,7 +66,7 @@ QUnit.test("html to html", function(assert) {
 
 
 
-	parser("<h1 id='foo' {{#if}}{{.}}{{/if}} class='a{{foo}}'>Hello {{message}}!</h1>",makeChecks(tests));
+	parser("<h1 id='foo' {{#if}}{{.}}{{/if}} class='a{{foo}}'>Hello {{message}}!</h1>",makeChecks(assert, tests));
 
 });
 
@@ -88,7 +88,7 @@ QUnit.test("uppercase html to html", function(assert) {
 
 
 
-	parser("<DIV>sibling</DIV><DIV>sibling</DIV>", makeChecks(tests));
+	parser("<DIV>sibling</DIV><DIV>sibling</DIV>", makeChecks(assert, tests));
 
 });
 
@@ -108,7 +108,7 @@ QUnit.test("camelCase attributes stay untouched (svg) - #22", function(assert) {
 
 
 
-	parser('<svg viewBox="0 0 15 22"></svg>', makeChecks(tests));
+	parser('<svg viewBox="0 0 15 22"></svg>', makeChecks(assert, tests));
 
 });
 
@@ -128,13 +128,13 @@ QUnit.test("camelCase tags stay untouched (svg)", function(assert) {
 
 
 
-	parser("<svg><radialGradient></radialGradient></svg>", makeChecks(tests));
+	parser("<svg><radialGradient></radialGradient></svg>", makeChecks(assert, tests));
 
 });
 
 QUnit.test("special in an attribute in an in-tag section", function(assert) {
 
-	parser("<div {{#truthy}}foo='{{baz}}'{{/truthy}}></div>",makeChecks([
+	parser("<div {{#truthy}}foo='{{baz}}'{{/truthy}}></div>",makeChecks(assert, [
 		["start", ["div", false]],
 		["special", ["#truthy"]],
 		["attrStart", ["foo"]],
@@ -150,7 +150,7 @@ QUnit.test("special in an attribute in an in-tag section", function(assert) {
 
 QUnit.test("special with a custom attribute", function(assert) {
 
-	parser('<div {{#attribute}} {{name}}="{{value}}" {{/attribute}}></div>',makeChecks([
+	parser('<div {{#attribute}} {{name}}="{{value}}" {{/attribute}}></div>',makeChecks(assert, [
 		["start", ["div", false]],
 		["special", ["#attribute"]],
 		["special", ["name"]],
@@ -168,7 +168,7 @@ QUnit.test("special with a custom attribute", function(assert) {
 
 QUnit.test("single attribute value", function(assert) {
 
-	parser('<input DISABLED/>',makeChecks([
+	parser('<input DISABLED/>',makeChecks(assert, [
 		["start", ["input", true]],
 		["attrStart", ["DISABLED"]],
 		["attrEnd", ["DISABLED"]],
@@ -178,7 +178,7 @@ QUnit.test("single attribute value", function(assert) {
 });
 
 QUnit.test("trailing linebreaks in IE", function(assert) {
-	parser("12345{{!\n  This is a\n  multi-line comment...\n}}67890\n",makeChecks([
+	parser("12345{{!\n  This is a\n  multi-line comment...\n}}67890\n",makeChecks(assert, [
 		["chars", ["12345"]],
 		["special", ["!\n  This is a\n  multi-line comment...\n"]],
 		["chars", ["67890\n"]],
@@ -188,7 +188,7 @@ QUnit.test("trailing linebreaks in IE", function(assert) {
 
 
 QUnit.test("block are allowed inside anchor tags", function(assert) {
-	parser("<a><div></div></a>", makeChecks([
+	parser("<a><div></div></a>", makeChecks(assert, [
 		['start', ['a', false]],
 		['end', ['a', false]],
 		['start', ['div', false]],
@@ -200,7 +200,7 @@ QUnit.test("block are allowed inside anchor tags", function(assert) {
 });
 
 QUnit.test("anchors are allowed as children of inline elements - #2169", function(assert) {
-	parser("<span><a></a></span>", makeChecks([
+	parser("<span><a></a></span>", makeChecks(assert, [
 		['start', ['span', false]],
 		['end', ['span', false]],
 		['start', ['a', false]],
@@ -212,7 +212,7 @@ QUnit.test("anchors are allowed as children of inline elements - #2169", functio
 });
 
 QUnit.test("inline tags encapsulate inner block elements", function(assert) {
-	parser("<span><div></div></span>", makeChecks([
+	parser("<span><div></div></span>", makeChecks(assert, [
 		['start', ['span', false]],
 		['end', ['span', false]],
 		['start', ['div', false]],
@@ -222,7 +222,7 @@ QUnit.test("inline tags encapsulate inner block elements", function(assert) {
 		['done', []]
 	]));
 
-	parser("<em><h1></h1></em>", makeChecks([
+	parser("<em><h1></h1></em>", makeChecks(assert, [
 		['start', ['em', false]],
 		['end', ['em', false]],
 		['start', ['h1', false]],
@@ -234,7 +234,7 @@ QUnit.test("inline tags encapsulate inner block elements", function(assert) {
 });
 
 QUnit.test("unordered lists will contain their list items", function(assert) {
-	parser("<ul><li></li><li></li></ul>", makeChecks([
+	parser("<ul><li></li><li></li></ul>", makeChecks(assert, [
 		['start', ['ul', false]],
 		['end', ['ul', false]],
 		['start', ['li', false]],
@@ -249,7 +249,7 @@ QUnit.test("unordered lists will contain their list items", function(assert) {
 });
 
 QUnit.test("supports single character attributes (#1132)", function(assert) {
-	parser('<circle r="25"></circle>', makeChecks([
+	parser('<circle r="25"></circle>', makeChecks(assert, [
 		["start", ["circle", false]],
 		["attrStart", ["r"]],
 		["attrValue", ["25"]],
@@ -261,7 +261,7 @@ QUnit.test("supports single character attributes (#1132)", function(assert) {
 });
 
 QUnit.test('accept custom tag with colon ":" #1108', function(assert) {
-	parser('<x:widget/>', makeChecks([
+	parser('<x:widget/>', makeChecks(assert, [
 		["start", ["x:widget",true]],
 		["end", ["x:widget", true]],
 		["done", []]
@@ -290,11 +290,11 @@ QUnit.test('output json', function(assert) {
 		["done",[]]
 	];
 
-	var intermediate = parser("<h1 id='foo' {{#if}}{{.}}{{/if}} class='a{{foo}}'>Hello {{message}}!</h1>",makeChecks(tests), true);
+	var intermediate = parser("<h1 id='foo' {{#if}}{{.}}{{/if}} class='a{{foo}}'>Hello {{message}}!</h1>",makeChecks(assert, tests), true);
 
 
 
-	parser(intermediate, makeChecks(tests) );
+	parser(intermediate, makeChecks(assert, tests) );
 });
 
 QUnit.test('less than outside of an element', function(assert) {
@@ -306,16 +306,16 @@ QUnit.test('less than outside of an element', function(assert) {
 		["done",[]]
 	];
 
-	var intermediate = parser("<h1> < </h1>",makeChecks(tests), true);
+	var intermediate = parser("<h1> < </h1>",makeChecks(assert, tests), true);
 
 
 
-	parser(intermediate, makeChecks(tests) );
+	parser(intermediate, makeChecks(assert, tests) );
 });
 
 
 QUnit.test('allow () and [] to enclose attributes', function(assert) {
-	parser('<p [click]="test"></p>', makeChecks([
+	parser('<p [click]="test"></p>', makeChecks(assert, [
 		["start", ["p", false]],
 		["attrStart", ["[click]"]],
 		["attrValue", ["test"]],
@@ -325,7 +325,7 @@ QUnit.test('allow () and [] to enclose attributes', function(assert) {
 		["done",[]]
 	]));
 
-	parser('<p (click)="test"></p>', makeChecks([
+	parser('<p (click)="test"></p>', makeChecks(assert, [
 		["start", ["p", false]],
 		["attrStart", [encoder.encode("(click)")]],
 		["attrValue", ["test"]],
@@ -335,7 +335,7 @@ QUnit.test('allow () and [] to enclose attributes', function(assert) {
 		["done",[]]
 	]));
 
-	parser('<p (click-me)="test"></p>', makeChecks([
+	parser('<p (click-me)="test"></p>', makeChecks(assert, [
 		["start", ["p", false]],
 		["attrStart", [encoder.encode("(click-me)")]],
 		["attrValue", ["test"]],
@@ -345,7 +345,7 @@ QUnit.test('allow () and [] to enclose attributes', function(assert) {
 		["done",[]]
 	]));
 
-	parser('<p (click_me)="test"></p>', makeChecks([
+	parser('<p (click_me)="test"></p>', makeChecks(assert, [
 		["start", ["p", false]],
 		["attrStart", [encoder.encode("(click_me)")]],
 		["attrValue", ["test"]],
@@ -359,7 +359,7 @@ QUnit.test('allow () and [] to enclose attributes', function(assert) {
 
 QUnit.test('allow {} to enclose attributes', function(assert) {
 
-	parser.parseAttrs('{a}="b" {{#c}}d{{/c}}',makeChecks([
+	parser.parseAttrs('{a}="b" {{#c}}d{{/c}}',makeChecks(assert, [
 		["attrStart", [encoder.encode("{a}")]],
 		["attrValue", ["b"]],
 		["attrEnd", [encoder.encode("{a}")]],
@@ -373,7 +373,7 @@ QUnit.test('allow {} to enclose attributes', function(assert) {
 });
 
 QUnit.test('tripple curly in attrs', function(assert) {
-	parser.parseAttrs('items="{{{ completed }}}"',makeChecks([
+	parser.parseAttrs('items="{{{ completed }}}"',makeChecks(assert, [
 		["attrStart", ["items"]],
 		["special",["{ completed "]],
 		["attrEnd", ["items"]]
@@ -381,7 +381,7 @@ QUnit.test('tripple curly in attrs', function(assert) {
 });
 
 QUnit.test('something', function(assert) {
-	parser.parseAttrs("c d='e'",makeChecks([
+	parser.parseAttrs("c d='e'",makeChecks(assert, [
 		["attrStart", ["c"]],
 		["attrEnd", ["c"]],
 		["attrStart", ["d"]],
@@ -393,7 +393,7 @@ QUnit.test('something', function(assert) {
 
 QUnit.test('references', function(assert) {
 
-	parser("<year-selector *y />",makeChecks([
+	parser("<year-selector *y />",makeChecks(assert, [
 		["start", ["year-selector", true]],
 		["attrStart", ["*y"]],
 		["attrEnd", ["*y"]],
@@ -405,7 +405,7 @@ QUnit.test('references', function(assert) {
 
 QUnit.test('quotes around attributes and other lazy attribute writing (#2097)', function(assert) {
 
-	parser("<c-d a={z}/>",makeChecks([
+	parser("<c-d a={z}/>",makeChecks(assert, [
 		["start", ["c-d", true]],
 		["attrStart", ["a"]],
 		["attrValue", ["{z}"]],
@@ -414,7 +414,7 @@ QUnit.test('quotes around attributes and other lazy attribute writing (#2097)', 
 		["done",[]]
 	]));
 
-	parser("<span v={{.}}/>",makeChecks([
+	parser("<span v={{.}}/>",makeChecks(assert, [
 		["start", ["span", true]],
 		["attrStart", ["v"]],
 		["special", ["."]],
@@ -425,7 +425,7 @@ QUnit.test('quotes around attributes and other lazy attribute writing (#2097)', 
 
 
 
-	parser("<div {{^f}} d {{/f}}/>",makeChecks([
+	parser("<div {{^f}} d {{/f}}/>",makeChecks(assert, [
 		["start", ["div", true]],
 		["special", ["^f"]],
 		["attrStart", ["d"]],
@@ -437,7 +437,7 @@ QUnit.test('quotes around attributes and other lazy attribute writing (#2097)', 
 });
 
 QUnit.test('camelCased attributes are converted to spinal-case', function(assert) {
-	parser.parseAttrs("({camelCase})='assigned'", makeChecks([
+	parser.parseAttrs("({camelCase})='assigned'", makeChecks(assert, [
 		["attrStart", [encoder.encode("({camelCase})")]],
 		["attrValue", ["assigned"]],
 		["attrEnd", [encoder.encode("({camelCase})")]],
@@ -445,7 +445,7 @@ QUnit.test('camelCased attributes are converted to spinal-case', function(assert
 });
 
 QUnit.test('elements that have attributes with equal signs and no values are handled appropriately (#17)', function(assert) {
-	parser("<input class='toggle' type='checkbox' {($checked)}='complete' ($change)=>", makeChecks([
+	parser("<input class='toggle' type='checkbox' {($checked)}='complete' ($change)=>", makeChecks(assert, [
 		["start", ["input", true]],
 		["attrStart", ["class"]],
 		["attrValue", ["toggle"]],
@@ -475,11 +475,11 @@ QUnit.test('{{}} in attribute values are handled correctly (#34)', function(asse
 		["done",[]]
 	];
 
-	parser("<h1 class='{{foo}}a'></h1>", makeChecks(tests));
+	parser("<h1 class='{{foo}}a'></h1>", makeChecks(assert, tests));
 });
 
 QUnit.test('> in attribute values are handled correctly', function(assert) {
-	parser('<h1 data-content="<b>foo</b>">bar</h1>', makeChecks([
+	parser('<h1 data-content="<b>foo</b>">bar</h1>', makeChecks(assert, [
 		["start", ["h1", false]],
 		["attrStart", ["data-content"]],
 		["attrValue", ["<b>foo</b>"]],
@@ -490,7 +490,7 @@ QUnit.test('> in attribute values are handled correctly', function(assert) {
 		["done",[]]
 	]));
 
-	parser('<h1 data-nothing="" data-something="something" data-content="<b>foo</b>" data-something-after="something-after">bar</h1>', makeChecks([
+	parser('<h1 data-nothing="" data-something="something" data-content="<b>foo</b>" data-something-after="something-after">bar</h1>', makeChecks(assert, [
 		["start", ["h1", false]],
 		["attrStart", ["data-nothing"]],
 		["attrEnd", ["data-nothing"]],		//10
@@ -509,7 +509,7 @@ QUnit.test('> in attribute values are handled correctly', function(assert) {
 		["done",[]]
 	]));
 
-	parser('<h1 data-first="<b>foo</b>" \n data-second="><>>>>><foo>>>/>> \n />"  \n >\nbar</h1>', makeChecks([
+	parser('<h1 data-first="<b>foo</b>" \n data-second="><>>>>><foo>>>/>> \n />"  \n >\nbar</h1>', makeChecks(assert, [
 		["start", ["h1", false]],
 		["attrStart", ["data-first"]],
 		["attrValue", ["<b>foo</b>"]],
@@ -545,12 +545,12 @@ QUnit.test('counts lines properly', function(assert) {
 			"\t\t{{.}}\r\n"+
 		"\t{{/if}}\r\n"+
 	"</article>\r\n",
-	makeChecks([
+	makeChecks(assert, [
 		[ "chars", [ " \n", 1 ] ],
 
 		[ "start", [ "style", false, 2 ] ],
 		[ "end", [ "style", false, 2 ] ],
-		[ "chars", [ 
+		[ "chars", [
 			"\r\n\t.header {\r\n"+
 			"\t\tcolor: black;\r\n"+
 			"\t}\r\n", 2 ] ],
@@ -652,17 +652,17 @@ QUnit.test('warn on missmatched tag (canjs/canjs#1476)', function(assert) {
 //!steal-remove-end
 
 QUnit.test('tags with data attributes are allowed in comments (#2)', function(assert) {
-	parser("{{! foo }}", makeChecks([
+	parser("{{! foo }}", makeChecks(assert, [
 		[ "special", [ "! foo " ] ],
 		[ "done", [] ]
 	]));
 
-	parser("{{! <foo /> }}", makeChecks([
+	parser("{{! <foo /> }}", makeChecks(assert, [
 		[ "special", [ "! <foo /> " ] ],
 		[ "done", [] ]
 	]));
 
-	parser("{{! <foo bar=\"{bam}\" /> }}", makeChecks([
+	parser("{{! <foo bar=\"{bam}\" /> }}", makeChecks(assert, [
 		[ "special", [ "! <foo bar=\"{bam}\" /> " ] ],
 		[ "done", [] ]
 	]));
@@ -670,17 +670,17 @@ QUnit.test('tags with data attributes are allowed in comments (#2)', function(as
 
 
 QUnit.test('multiline special comments (#14)', function(assert) {
-	parser("{{! foo !}}", makeChecks([
+	parser("{{! foo !}}", makeChecks(assert, [
 		[ "special", [ "! foo !" ] ],
 		[ "done", [] ]
 	]));
 
-	parser("{{! {{foo}} {{bar}} !}}", makeChecks([
+	parser("{{! {{foo}} {{bar}} !}}", makeChecks(assert, [
 		[ "special", [ "! {{foo}} {{bar}} !" ] ],
 		[ "done", [] ]
 	]));
 
-	parser("{{!\n{{foo}}\n{{bar}}\n!}}", makeChecks([
+	parser("{{!\n{{foo}}\n{{bar}}\n!}}", makeChecks(assert, [
 		[ "special", [ "!\n{{foo}}\n{{bar}}\n!" ] ],
 		[ "done", [] ]
 	]));
@@ -697,7 +697,7 @@ QUnit.test('spaces in attribute names that start with `{` or `(` are encoded (#4
 		["done",[]]
 	];
 
-	parser("<h1 {foo bar}='a'></h1>", makeChecks(tests));
+	parser("<h1 {foo bar}='a'></h1>", makeChecks(assert, tests));
 });
 
 QUnit.test('for attributes without values, spaces in attribute names that start with `{` or `(` are encoded (#48)', function(assert) {
@@ -712,7 +712,7 @@ QUnit.test('for attributes without values, spaces in attribute names that start 
 		["done",[]]
 	];
 
-	parser("<h1 {foo } {bar }></h1>", makeChecks(tests));
+	parser("<h1 {foo } {bar }></h1>", makeChecks(assert, tests));
 });
 
 QUnit.test('mismatched brackets work: {(foo})', function(assert) {
@@ -726,7 +726,7 @@ QUnit.test('mismatched brackets work: {(foo})', function(assert) {
 		["done",[]]
 	];
 
-	parser("<h1 {(foo})='a'></h1>", makeChecks(tests));
+	parser("<h1 {(foo})='a'></h1>", makeChecks(assert, tests));
 });
 
 QUnit.test('mismatched brackets work: ({foo)}', function(assert) {
@@ -740,7 +740,7 @@ QUnit.test('mismatched brackets work: ({foo)}', function(assert) {
 		["done",[]]
 	];
 
-	parser("<h1 ({foo)}='a'></h1>", makeChecks(tests));
+	parser("<h1 ({foo)}='a'></h1>", makeChecks(assert, tests));
 
 });
 
@@ -756,7 +756,7 @@ QUnit.test('forward slashes are encoded (#52)', function(assert) {
 		["done",[]]
 	];
 
-	parser("<h1 {foo/bar}='a'></h1>", makeChecks(tests));
+	parser("<h1 {foo/bar}='a'></h1>", makeChecks(assert, tests));
 });
 
 QUnit.test('camelCase properties are encoded with on:, :to, :from, :bind bindings', function(assert) {
@@ -779,7 +779,7 @@ QUnit.test('camelCase properties are encoded with on:, :to, :from, :bind binding
 		["done",[]]
 	];
 
-	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(tests));
+	parser("<h1 on:aB='c' dE:to='f' gH:from='i' jK:bind='l'></h1>", makeChecks(assert, tests));
 });
 
 testHelpers.dev.devOnlyTest('Warn on missing attribute value end quotes (canjs/can-view-parser#7)', function (assert) {
@@ -882,5 +882,5 @@ QUnit.test('TextNodes are not inserted before the <head> or after the </body>', 
 	];
 
 	var html = "<html>\n\t<head>\n\t\t<title>Test</title>\n\t\t</head>\n\t<body>\n\t\t<h1>Test</h1>\n\t</body>\n</html>";
-	parser(html, makeChecks(tests));
+	parser(html, makeChecks(assert, tests));
 });
